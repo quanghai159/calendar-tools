@@ -1,0 +1,45 @@
+{
+    "database": {
+      "type": "sqlite",
+      "path": "database/calendar_tools.db"
+    },
+    "firebase": {
+      "apiKey": "AIzaSyCLxeSH4e9-5-G9lvrBmTQZm4m3IMIXexw",
+      "authDomain": "hunonic-marketing-support.firebaseapp.com",
+      "projectId": "hunonic-marketing-support",
+      "storageBucket": "hunonic-marketing-support.firebasestorage.app",
+      "messagingSenderId": "784542569097",
+      "appId": "1:784542569097:web:19a71feadcd8633ac12c58"
+    },
+    "notifications": {
+      "telegram": {
+        "bot_token": "8338680403:AAFZPZM2tllQgFNQcVdM2CzZlMRXYsCJxpw",
+        "enabled": true
+      },
+      "email": {
+        "smtp_server": "smtp.gmail.com",
+        "smtp_port": 587,
+        "username": "",
+        "password": "",
+        "enabled": false
+      },
+      "zalo": {
+        "access_token": "",
+        "oa_id": "",
+        "enabled": false
+      }
+    },
+    "google": {
+      "credentials_file": "config/google_credentials.json",
+      "scopes": [
+        "https://www.googleapis.com/auth/spreadsheets.readonly",
+        "https://www.googleapis.com/auth/calendar.readonly"
+      ]
+    },
+    "app": {
+      "host": "0.0.0.0",
+      "port": 5000,
+      "debug": true,
+      "timezone": "Asia/Ho_Chi_Minh"
+    }
+  }

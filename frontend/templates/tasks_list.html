@@ -1,0 +1,253 @@
+{% extends "base.html" %}
+
+{% block title %}Danh Sách Tác Vụ - Hunonic Calendar Tools{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-tasks text-primary"></i> Danh Sách Tác Vụ</h2>
+                <div>
+                    <a href="{{ url_for('process_notifications') }}" class="btn btn-warning me-2">
+                        <i class="fas fa-bell"></i> Xử Lý Thông Báo
+                    </a>
+                    <a href="{{ url_for('create_simple_task') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Tạo Tác Vụ Mới
+                    </a>
+                </div>
+            </div>
+
+            {% if tasks %}
+                <div class="row">
+                    {% for task in tasks %}
+                    <div class="col-md-6 col-lg-4 mb-4">
+                        <div class="card task-card {{ task.priority }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ task.title }}</h5>
+                                <p class="card-text">{{ task.description or 'Không có mô tả' }}</p>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-calendar"></i> 
+                                        {{ task.start_date }} - {{ task.end_date }}
+                                    </small>
+                                </div>
+                                
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-clock"></i> 
+                                        Deadline: {{ task.deadline }}
+                                    </small>
+                                </div>
+                                
+                                {% if task.notification_time %}
+                                <div class="mb-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-bell"></i> 
+                                        Thông báo: {{ task.notification_time }}
+                                    </small>
+                                </div>
+                                {% endif %}
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge priority-{{ task.priority }} status-badge">
+                                        {{ task.priority.upper() }}
+                                    </span>
+                                    <span class="badge status-{{ task.status }} status-badge">
+                                        {{ task.status.upper() }}
+                                    </span>
+                                </div>
+                                
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-tag"></i> {{ task.category }}
+                                    </small>
+                                </div>
+                                
+                                <div class="mt-3">
+                                    <a href="{{ url_for('view_task_detail', task_id=task.task_id) }}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye"></i> Xem Chi Tiết
+                                    </a>
+                                    
+                                    <a href="{{ url_for('test_notification', task_id=task.task_id) }}" class="btn btn-sm btn-info">
+                                        <i class="fas fa-paper-plane"></i> Test Thông Báo
+                                    </a>
+                                    
+                                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.task_id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-check"></i> Hoàn Thành
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Chưa có tác vụ nào</h4>
+                    <p class="text-muted">Hãy tạo tác vụ đầu tiên của bạn!</p>
+                    <a href="{{ url_for('create_simple_task') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Tạo Tác Vụ Mới
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .task-card {
+        border-left: 4px solid var(--primary-color);
+        margin-bottom: 15px;
+        transition: transform 0.3s ease;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px var(--shadow-color);
+    }
+    
+    .task-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px var(--shadow-color);
+    }
+    
+    /* Priority colors theo Hunonic guideline */
+    .task-card.high { 
+        border-left-color: var(--secondary-color); /* Cam đỏ #ff6b35 */
+    }
+    
+    .task-card.medium { 
+        border-left-color: var(--primary-color); /* Xanh lá #01af32 */
+    }
+    
+    .task-card.low { 
+        border-left-color: var(--accent-color); /* Xanh mint #4ecdc4 */
+    }
+    
+    .task-card.urgent { 
+        border-left-color: #dc3545; /* Đỏ khẩn cấp */
+    }
+    
+    /* Status badges */
+    .status-badge {
+        font-size: 0.8em;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+    
+    /* Priority badges */
+    .badge.bg-danger { 
+        background: var(--gradient-secondary) !important; /* Cam đỏ gradient */
+    }
+    
+    .badge.bg-warning { 
+        background: linear-gradient(135deg, #ffc107, #ffeb3b) !important; /* Vàng gradient */
+    }
+    
+    .badge.bg-success { 
+        background: var(--gradient-primary) !important; /* Xanh lá gradient */
+    }
+    
+    /* Status badges */
+    .badge.bg-success.status-badge { 
+        background: var(--gradient-primary) !important; /* Completed - Xanh lá */
+    }
+    
+    .badge.bg-warning.status-badge { 
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important; /* Pending - Vàng nhạt */
+        color: #856404 !important;
+    }
+    
+    .badge.bg-danger.status-badge { 
+        background: var(--gradient-secondary) !important; /* Overdue - Cam đỏ */
+    }
+    
+    /* Action buttons */
+    .btn-outline-primary {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .btn-outline-primary:hover {
+        background: var(--primary-color);
+        border-color: var(--primary-color);
+    }
+    
+    .btn-info {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+    }
+    
+    .btn-info:hover {
+        background: #3bb5b0;
+        border-color: #3bb5b0;
+    }
+    
+    .btn-success {
+        background: var(--gradient-primary);
+        border: none;
+    }
+    
+    .btn-success:hover {
+        background: var(--primary-dark);
+    }
+    
+    /* Header section */
+    .d-flex.justify-content-between {
+        background: linear-gradient(135deg, #f8fff9, #e8f5e8);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 15px var(--shadow-color);
+    }
+    
+    /* Empty state */
+    .text-center.py-5 {
+        background: white;
+        border-radius: 15px;
+        padding: 60px 20px;
+        box-shadow: 0 4px 15px var(--shadow-color);
+    }
+
+    /* Priority classes */
+    .priority-high {
+        background: var(--gradient-secondary) !important;
+        color: white !important;
+    }
+
+    .priority-medium {
+        background: var(--gradient-primary) !important;
+        color: white !important;
+    }
+
+    .priority-low {
+        background: linear-gradient(135deg, var(--accent-color), #3bb5b0) !important;
+        color: white !important;
+    }
+
+    .priority-urgent {
+        background: linear-gradient(135deg, #dc3545, #c82333) !important;
+        color: white !important;
+    }
+
+    /* Status classes */
+    .status-completed {
+        background: var(--gradient-primary) !important;
+        color: white !important;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #fff3cd, #ffeaa7) !important;
+        color: #856404 !important;
+    }
+
+    .status-overdue {
+        background: var(--gradient-secondary) !important;
+        color: white !important;
+    }
+    </style>
+{% endblock %}

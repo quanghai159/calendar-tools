@@ -1,0 +1,31 @@
+{
+    "backup_dir": "/Users/AmyNguyen/Desktop/backup-repos",
+    "log_file": "/Users/AmyNguyen/Desktop/multi_backup.log",
+    "backup_interval": 1800,
+    "projects": {
+      "hunonic-banner-tools": {
+        "source_dir": "/Users/AmyNguyen/Desktop/Cursor AI MKT/hunonic-banner-tools",
+        "git_url": "https://github.com/quanghai159/hunonic-banner-tools.git",
+        "enabled": true,
+        "description": "Hunonic Banner Tools Project"
+      },
+      "calendar-tools": {
+        "source_dir": "/Users/AmyNguyen/Desktop/Cursor AI MKT/calendar-tools",
+        "git_url": "https://github.com/quanghai159/calendar-tools.git",
+        "enabled": true,
+        "description": "Calendar Tools Project"
+      }
+    },
+    "exclude_patterns": [
+      ".git",
+      "__pycache__",
+      "*.pyc",
+      ".DS_Store",
+      "node_modules",
+      "*.log",
+      "*.tmp",
+      ".env",
+      "database/*.db",
+      "logs/*.log"
+    ]
+  }

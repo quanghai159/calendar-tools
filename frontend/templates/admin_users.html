@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Quản trị user & quyền{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h3>Danh sách user</h3>
+  <table class="table table-sm table-bordered">
+    <thead>
+      <tr>
+        <th>User ID</th>
+        <th>Name/Email</th>
+        <th>Quyền trực tiếp</th>
+        <th>Thêm quyền</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td>{{ u.user_id }}</td>
+        <td>{{ u.name }}</td>
+        <td>
+          <a href="{{ url_for('admin_edit_user_rights', user_id=u.user_id) }}" class="btn btn-sm btn-outline-primary mb-2">
+            Sửa quyền trực tiếp (Matrix)
+          </a>
+          <a href="{{ url_for('admin_edit_user_tools', user_id=u.user_id) }}"
+            class="btn btn-sm btn-outline-secondary mb-2">Cấp tool cho user (Matrix)</a>
+        </td>
+        
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

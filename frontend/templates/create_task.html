@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Tạo tác vụ mới - Calendar Tools{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-plus me-2"></i>Tạo tác vụ mới
+                </h4>
+            </div>
+            <div class="card-body">
+                <form id="createTaskForm" method="POST" novalidate>
+                    <!-- Thông tin cá nhân -->
+                    <h5 class="mb-3">
+                        <i class="fas fa-user me-2"></i>Thông tin cá nhân
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Tên người dùng *</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập tên người dùng
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback">
+                                Vui lòng nhập email hợp lệ
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông tin thông báo -->
+                    <h5 class="mb-3 mt-4">
+                        <i class="fas fa-bell me-2"></i>Thông tin thông báo
+                    </h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="telegram_username" class="form-label">Telegram Username</label>
+                            <div class="input-group">
+                                <span class="input-group-text">@</span>
+                                <input type="text" class="form-control" id="telegram_username" name="telegram_username" placeholder="username">
+                            </div>
+                            <div class="form-text">Ví dụ: @john_doe</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="zalo_phone" class="form-label">Số điện thoại Zalo</label>
+                            <input type="tel" class="form-control" id="zalo_phone" name="zalo_phone" placeholder="0123456789">
+                            <div class="form-text">Ví dụ: 0123456789</div>
+                        </div>
+                    </div>
+
+                    <!-- Google Sheet URL -->
+                    <h5 class="mb-3 mt-4">
+                        <i class="fas fa-table me-2"></i>Google Sheet
+                    </h5>
+                    
+                    <div class="mb-3">
+                        <label for="google_sheet_url" class="form-label">Link Google Sheet *</label>
+                        <input type="url" class="form-control" id="google_sheet_url" name="google_sheet_url" 
+                               placeholder="https://docs.google.com/spreadsheets/d/..." required>
+                        <div class="invalid-feedback">
+                            Vui lòng nhập link Google Sheet hợp lệ
+                        </div>
+                        <div class="form-text">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Đảm bảo Google Sheet có cấu trúc: Title, Description, Start Date, End Date, Deadline, Category, Priority
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('index') }}" class="btn btn-secondary me-md-2">
+                            <i class="fas fa-arrow-left me-1"></i>Quay lại
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Tạo tác vụ
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Hướng dẫn -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-question-circle me-2"></i>Hướng dẫn sử dụng
+                </h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li><strong>Tạo Google Sheet:</strong> Tạo một Google Sheet mới với các cột: Title, Description, Start Date, End Date, Deadline, Category, Priority</li>
+                    <li><strong>Chia sẻ quyền truy cập:</strong> Đảm bảo Google Sheet có thể truy cập công khai hoặc chia sẻ với email của hệ thống</li>
+                    <li><strong>Điền thông tin:</strong> Điền đầy đủ thông tin cá nhân và thông báo</li>
+                    <li><strong>Tạo tác vụ:</strong> Nhấn "Tạo tác vụ" để bắt đầu sử dụng</li>
+                </ol>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Mẹo:</strong> Bạn có thể thêm thông tin thông báo sau khi tạo tác vụ. Hệ thống sẽ tự động đồng bộ dữ liệu từ Google Sheet.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Custom validation for Google Sheet URL
+    document.getElementById('google_sheet_url').addEventListener('input', function() {
+        const url = this.value;
+        const isValid = url.includes('docs.google.com/spreadsheets/');
+        
+        if (url && !isValid) {
+            this.setCustomValidity('Vui lòng nhập link Google Sheet hợp lệ');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Custom validation for Telegram username
+    document.getElementById('telegram_username').addEventListener('input', function() {
+        const username = this.value;
+        const isValid = /^[a-zA-Z0-9_]{5,32}$/.test(username);
+        
+        if (username && !isValid) {
+            this.setCustomValidity('Username phải có 5-32 ký tự, chỉ chứa chữ cái, số và gạch dưới');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Custom validation for phone number
+    document.getElementById('zalo_phone').addEventListener('input', function() {
+        const phone = this.value;
+        const isValid = /^(\+84|84|0)[0-9]{9,10}$/.test(phone);
+        
+        if (phone && !isValid) {
+            this.setCustomValidity('Số điện thoại không hợp lệ. Ví dụ: 0123456789');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+</script>
+{% endblock %}

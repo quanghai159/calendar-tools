@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar Tools - Hunonic Marketing Tools{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section text-center">
+    <div class="container">
+        <h1 class="display-4 fw-bold mb-4">
+            <i class="fas fa-calendar-alt me-3"></i>
+            Calendar Tools
+        </h1>
+        <p class="lead mb-4 fs-5">
+            Quản lý lịch làm việc thông minh với thông báo tự động
+        </p>
+        <p class="mb-5">
+            Tích hợp Telegram Bot, Email, Zalo để nhắc nhở deadline. 
+            Đồng bộ với Google Sheets và tạo báo cáo chi tiết.
+        </p>
+        <div class="d-flex justify-content-center gap-3 flex-wrap">
+            <a href="{{ url_for('create_simple_task') }}" class="btn btn-light btn-lg">
+                <i class="fas fa-plus me-2"></i>Tạo tác vụ mới
+            </a>
+            <a href="{{ url_for('view_tasks') }}" class="btn btn-outline-light btn-lg">
+                <i class="fas fa-tasks me-2"></i>Xem danh sách
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold text-primary">Tính năng chính</h2>
+                <p class="lead text-light">Quản lý thời gian hiệu quả với các công cụ mạnh mẽ</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bell"></i>
+                    </div>
+                    <h5 class="feature-title">Thông báo tự động</h5>
+                    <p class="feature-description">
+                        Nhận thông báo qua Telegram, Email và Zalo trước deadline. 
+                        Không bao giờ bỏ lỡ công việc quan trọng.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <h5 class="feature-title">Đồng bộ Google Sheets</h5>
+                    <p class="feature-description">
+                        Import dữ liệu từ Google Sheets, đồng bộ tự động 
+                        và cập nhật real-time.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h5 class="feature-title">Báo cáo chi tiết</h5>
+                    <p class="feature-description">
+                        Theo dõi tiến độ với báo cáo thống kê, 
+                        biểu đồ trực quan và insights thông minh.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tags"></i>
+                    </div>
+                    <h5 class="feature-title">Phân loại thông minh</h5>
+                    <p class="feature-description">
+                        Phân loại tác vụ theo mức độ ưu tiên, 
+                        loại công việc và trạng thái.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h5 class="feature-title">Giao diện responsive</h5>
+                    <p class="feature-description">
+                        Sử dụng mọi lúc mọi nơi trên điện thoại, 
+                        tablet và máy tính.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h5 class="feature-title">Bảo mật cao</h5>
+                    <p class="feature-description">
+                        Dữ liệu được mã hóa và bảo vệ an toàn, 
+                        tuân thủ tiêu chuẩn bảo mật quốc tế.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Quick Actions Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col-12">
+                <h2 class="display-5 fw-bold text-primary">Bắt đầu ngay</h2>
+                <p class="lead text-light">Chọn hành động bạn muốn thực hiện</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
+                    <h5 class="action-title">Tạo tác vụ mới</h5>
+                    <p class="action-description">
+                        Thêm tác vụ mới với thông tin chi tiết, 
+                        deadline và thời gian nhắc nhở.
+                    </p>
+                    <a href="{{ url_for('create_simple_task') }}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Tạo ngay
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-list"></i>
+                    </div>
+                    <h5 class="action-title">Xem danh sách</h5>
+                    <p class="action-description">
+                        Quản lý tất cả tác vụ, cập nhật trạng thái 
+                        và theo dõi tiến độ.
+                    </p>
+                    <a href="{{ url_for('view_tasks') }}" class="btn btn-primary">
+                        <i class="fas fa-eye me-2"></i>Xem ngay
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="action-card">
+                    <div class="action-icon">
+                        <i class="fas fa-sync"></i>
+                    </div>
+                    <h5 class="action-title">Đồng bộ dữ liệu</h5>
+                    <p class="action-description">
+                        Import dữ liệu từ Google Sheets 
+                        và đồng bộ với hệ thống.
+                    </p>
+                    <a href="#" class="btn btn-secondary" disabled>
+                        <i class="fas fa-sync me-2"></i>Đồng bộ (Sắp có)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12 mb-5">
+                <h2 class="display-5 fw-bold text-primary">Thống kê của bạn</h2>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <div class="stat-number">{{ stats.total_tasks or 0 }}</div>
+                    <div class="stat-label">Tổng tác vụ</div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-number">{{ stats.completed_tasks or 0 }}</div>
+                    <div class="stat-label">Đã hoàn thành</div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-number">{{ stats.pending_tasks or 0 }}</div>
+                    <div class="stat-label">Đang chờ</div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-number">{{ stats.overdue_tasks or 0 }}</div>
+                    <div class="stat-label">Quá hạn</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5">
+    <div class="container text-center">
+        <div class="cta-card">
+            <h2 class="display-5 fw-bold mb-4">Sẵn sàng bắt đầu?</h2>
+            <p class="lead mb-4">
+                Tạo tác vụ đầu tiên và trải nghiệm sự tiện lợi của Calendar Tools
+            </p>
+            <div class="d-flex justify-content-center gap-3 flex-wrap">
+                <a href="{{ url_for('create_simple_task') }}" class="btn btn-light btn-lg">
+                    <i class="fas fa-rocket me-2"></i>Tạo tác vụ đầu tiên
+                </a>
+                <a href="{{ url_for('view_tasks') }}" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-chart-bar me-2"></i>Xem báo cáo
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
