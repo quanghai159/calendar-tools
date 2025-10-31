@@ -26,7 +26,7 @@ def migrate_users_table(conn):
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 last_login TIMESTAMP,
-                phone_number TEXT,
+                phone_number TEXT
             )
         """)
         print("   ✅ Tạo bảng users mới")
@@ -36,7 +36,8 @@ def migrate_users_table(conn):
             'display_name': 'TEXT',
             'avatar_url': 'TEXT',
             'updated_at': 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
-            'last_login': 'TIMESTAMP'
+            'last_login': 'TIMESTAMP',
+            'phone_number': 'TEXT'
         }
         
         for col_name, col_type in new_columns.items():
