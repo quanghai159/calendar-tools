@@ -37,6 +37,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
 sys.path.append(parent_dir)
 
+# Import UserSettingsManager để lấy labels
+sys.path.append(os.path.dirname(parent_dir))  # Để import từ shared
+from shared.database.user_settings_manager import UserSettingsManager
+
 class NotificationScheduler:
     def __init__(self, db, telegram_notifier=None, email_notifier=None, zalo_notifier=None):
         """
@@ -327,8 +331,81 @@ class NotificationScheduler:
         """Chuẩn bị nội dung thông báo"""
         try:
             title = notification.get('title', 'Task')
-            deadline = notification.get('deadline', 'N/A')
             priority = notification.get('priority', 'medium')
+            notification_id = notification.get('notification_id', '')
+            task_id = notification.get('task_id', '')
+            scheduled_time = notification.get('scheduled_time', '')  # Lấy scheduled_time thay vì deadline
+            
+            # Lấy user_id từ notification hoặc task
+            user_id = notification.get('user_id')
+            if not user_id and task_id:
+                try:
+                    with self.db.get_connection() as conn:
+                        row = conn.execute("SELECT user_id FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+                        if row and row[0]:
+                            user_id = row[0]
+                except:
+                    pass
+            
+            # Xác định notification đến từ cột nào (notification_time, notif1-8)
+            # Format khi create: notif_{task_id}_{notif_source}_{timestamp}
+            # Format cũ: notif_{task_id}_{timestamp} (không có notif_source)
+            notif_source = 'notification_time'  # Default
+            if notification_id and '_' in notification_id:
+                parts = notification_id.split('_')
+                if len(parts) >= 4:
+                    # Format mới: notif_task_xxx_notif1_timestamp -> parts[3] = 'notif1'
+                    notif_source = parts[3]
+                elif len(parts) >= 3:
+                    # Format cũ: notif_task_xxx_timestamp -> không có notif_source, dùng default
+                    notif_source = 'notification_time'
+            
+            # Lấy label từ user settings
+            notif_label = 'Thông báo'  # Default
+            if user_id:
+                try:
+                    settings_mgr = UserSettingsManager(self.db.db_path)
+                    if notif_source.startswith('notif'):
+                        # notif1 -> notif_label_1
+                        notif_num = notif_source.replace('notif', '')
+                        label_key = f'notif_label_{notif_num}'
+                        notif_label = settings_mgr.get_setting(
+                            user_id, label_key, tool_id=None, 
+                            default=f'Thông báo {notif_num}'
+                        ) or f'Thông báo {notif_num}'
+                    else:
+                        # notification_time -> dùng label mặc định hoặc lấy từ setting
+                        notif_label = settings_mgr.get_setting(
+                            user_id, 'notification_time_label', tool_id=None,
+                            default='Thông báo chính'
+                        ) or 'Thông báo chính'
+                except Exception as e:
+                    print(f"⚠️  Error getting notif label: {e}")
+            
+            # Format scheduled_time (thời điểm gửi thông báo): "2025-10-31 12:12:00" -> "31/10/2025 - 12:12"
+            formatted_time = 'N/A'
+            if scheduled_time:
+                try:
+                    # Thử parse nhiều format
+                    if 'T' in scheduled_time:
+                        # Format: 2025-10-31T12:12
+                        dt = datetime.strptime(scheduled_time, '%Y-%m-%dT%H:%M')
+                    elif len(scheduled_time) == 19:
+                        # Format: 2025-10-31 12:12:00
+                        dt = datetime.strptime(scheduled_time, '%Y-%m-%d %H:%M:%S')
+                    elif len(scheduled_time) == 16:
+                        # Format: 2025-10-31 12:12
+                        dt = datetime.strptime(scheduled_time, '%Y-%m-%d %H:%M')
+                    else:
+                        # Format: 2025-10-31
+                        dt = datetime.strptime(scheduled_time, '%Y-%m-%d')
+                    
+                    # Format: 31/10/2025 - 12:12
+                    formatted_time = dt.strftime('%d/%m/%Y - %H:%M')
+                except Exception as e:
+                    # Nếu không parse được, hiển thị nguyên gốc
+                    print(f"⚠️  Error parsing scheduled_time '{scheduled_time}': {e}")
+                    formatted_time = scheduled_time
             
             # Tạo emoji theo priority
             priority_emoji = {
@@ -338,17 +415,18 @@ class NotificationScheduler:
                 'urgent': '🚨'
             }.get(priority, '🟡')
             
+            # Message không có dấu **, hiển thị scheduled_time với label
             message = f"""
-{priority_emoji} **NHẮC NHỞ TÁC VỤ**
+    {priority_emoji} NHẮC NHỞ TÁC VỤ
 
-📋 **Tên tác vụ:** {title}
-⏰ **Deadline:** {deadline}
-🎯 **Mức độ ưu tiên:** {priority.upper()}
+    📋 Tên tác vụ: {title}
+    ⏰ Deadline ({notif_label}): {formatted_time}
+    🎯 Mức độ ưu tiên: {priority.upper()}
 
-💡 Hãy hoàn thành tác vụ trước deadline!
+    💡 Hãy hoàn thành tác vụ trước deadline!
 
----
-📱 Calendar Tools Bot
+    ---
+    📱 Calendar Tools Bot
             """
             
             return message.strip()

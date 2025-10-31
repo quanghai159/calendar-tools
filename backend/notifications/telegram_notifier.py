@@ -193,7 +193,7 @@ class TelegramNotifier:
     
     def _format_message(self, message: str) -> str:
         """
-        Format message với header và footer
+        Format message với footer (không thêm header)
         
         Args:
             message: Message gốc
@@ -201,10 +201,10 @@ class TelegramNotifier:
         Returns:
             Formatted message
         """
-        header = "📅 <b>CALENDAR TOOLS</b>\n"
+        # Bỏ header, chỉ giữ footer
         footer = f"\n\n<i>Gửi lúc: {datetime.now().strftime('%d/%m/%Y %H:%M')}</i>"
         
-        return header + message + footer
+        return message + footer
     
     def _render_template(self, template_name: str, data: Dict[str, Any]) -> str:
         """

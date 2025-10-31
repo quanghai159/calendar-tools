@@ -175,13 +175,13 @@ class SimpleTaskManager:
             # Bước 6: Schedule notifications nếu có (sau khi commit)
             # Tạo notification từ notification_time
             if task_data.get('notification_time'):
-                self._schedule_notification_after_commit(task_id, event_id, task_data['notification_time'])
+                self._schedule_notification_after_commit(task_id, event_id, task_data['notification_time'], 'notification_time')
 
             # Tạo notifications từ notif1-8
             for i in range(1, 9):
                 notif_key = f'notif{i}'
                 if task_data.get(notif_key):
-                    self._schedule_notification_after_commit(task_id, event_id, task_data[notif_key])
+                    self._schedule_notification_after_commit(task_id, event_id, task_data[notif_key], notif_key)
             
             print(f"✅ Task created successfully: {task_id}")
             return task_id
@@ -190,7 +190,7 @@ class SimpleTaskManager:
             print(f"❌ Error creating task: {e}")
             raise
 
-    def _schedule_notification_after_commit(self, task_id: str, event_id: str, notification_time: str):
+    def _schedule_notification_after_commit(self, task_id: str, event_id: str, notification_time: str, notif_source: str = 'notification_time'):
         """
         Lên lịch thông báo sau khi commit task
         """
