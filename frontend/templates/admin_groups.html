@@ -17,10 +17,12 @@
       <tr>
         <td>{{ g.group_id }}</td>
         <td>{{ g.group_name }}</td>
-        <td>
-          {% for label in g.users %}
-            <span class="badge bg-info text-dark mb-1">{{ label }}</span>
-          {% endfor %}
+        <td style="max-width: 300px;">
+          <div style="display: flex; flex-direction: column; gap: 4px; flex-wrap: wrap; max-height: 200px;">
+            {% for label in g.users %}
+              <span class="badge bg-info text-dark" style="display: inline-block; width: fit-content;">{{ label }}</span>
+            {% endfor %}
+          </div>
         </td>
         <td>
           <div class="d-flex flex-wrap gap-2">
