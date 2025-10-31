@@ -38,7 +38,7 @@ body {
 }
 
 .navbar-nav .nav-link:hover {
-    color: var(--accent-color) !important;
+    /*color: var(--accent-color) !important; */
     transform: translateY(-2px);
 }
 
@@ -621,3 +621,63 @@ body {
         font-size: 1.1rem;
     }
 }
+
+.table-striped tr:nth-child(even) {
+    background-color: #e3f2fd;
+  }
+  .table-striped tr:nth-child(odd) {
+    background-color: #fff;
+  }
+
+  /* Cố định cột 1 (STT) */
+.sticky-col {
+    position: sticky;
+    left: 0;
+    background: #fff;
+    z-index: 3;
+    min-width: 55px; /* Nên đặt width cụ thể */
+  }
+  
+  /* Cố định cột 2 (Tiêu đề) - Lưu ý left bằng đúng width cột 1 */
+  .sticky-col-2 {
+    position: sticky;
+    left: 55px; /* đúng bằng min-width cột STT */
+    background: #fff;
+    z-index: 3;
+    min-width: 200px; /* width cột 2 */
+    box-shadow: 2px 0 2px -2px #8882;
+  }
+  
+  .table th, .table td {
+    white-space: nowrap;
+    /* Đảm bảo không wrap dữ liệu */
+  }
+  
+  .task-table th, .task-table td {
+    white-space: nowrap;
+  }
+  
+  .task-table-wrapper {
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .table input[disabled] {
+    background-color: #fff ;
+    opacity: 1;
+    cursor: default;
+  }
+
+  /* Ô thời gian đáp ứng điều kiện lọc báo cáo */
+.time-hit {
+    background-color: #e9bc8d !important; /* cam nhạt */
+    border-color: #ffc999 !important;
+  }
+
+.time-hit-urgent { background-color: #eb6969 !important; border-color:#ffb3b3 !important; }
+
+.table input[disabled]::placeholder {
+    color: #b5b5b5;
+    opacity: 1;
+  }
+

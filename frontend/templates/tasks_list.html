@@ -19,73 +19,76 @@
             </div>
 
             {% if tasks %}
-                <div class="row">
-                    {% for task in tasks %}
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card task-card {{ task.priority }}">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ task.title }}</h5>
-                                <p class="card-text">{{ task.description or 'Không có mô tả' }}</p>
-                                
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-calendar"></i> 
-                                        {{ task.start_date }} - {{ task.end_date }}
-                                    </small>
-                                </div>
-                                
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-clock"></i> 
-                                        Deadline: {{ task.deadline }}
-                                    </small>
-                                </div>
-                                
-                                {% if task.notification_time %}
-                                <div class="mb-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-bell"></i> 
-                                        Thông báo: {{ task.notification_time }}
-                                    </small>
-                                </div>
-                                {% endif %}
-                                
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <span class="badge priority-{{ task.priority }} status-badge">
-                                        {{ task.priority.upper() }}
-                                    </span>
-                                    <span class="badge status-{{ task.status }} status-badge">
-                                        {{ task.status.upper() }}
-                                    </span>
-                                </div>
-                                
-                                <div class="mt-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-tag"></i> {{ task.category }}
-                                    </small>
-                                </div>
-                                
-                                <div class="mt-3">
-                                    <a href="{{ url_for('view_task_detail', task_id=task.task_id) }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fas fa-eye"></i> Xem Chi Tiết
-                                    </a>
-                                    
-                                    <a href="{{ url_for('test_notification', task_id=task.task_id) }}" class="btn btn-sm btn-info">
-                                        <i class="fas fa-paper-plane"></i> Test Thông Báo
-                                    </a>
-                                    
-                                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.task_id) }}" class="d-inline">
-                                        <input type="hidden" name="status" value="completed">
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="fas fa-check"></i> Hoàn Thành
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
+            <div class="row">
+                <div class="task-table-wrapper" style="overflow-x:auto;">
+                    <button class="btn btn-success btn-sm mb-2" onclick="addNewTaskRow()">
+                      <i class="fas fa-plus"></i> Thêm dòng mới
+                    </button>
+                        <table class="table table-striped table-editable task-table" style="min-width:1200px;">
+                            <thead>
+                            <tr>
+                                <th class="sticky-col">STT</th>
+                                <th class="sticky-col sticky-col-2">Tiêu đề</th>
+                                <th>Mô tả</th>
+                                <th>Bắt đầu</th>
+                                <th>Kết thúc</th>
+                                <th>Deadline</th>
+                                <th>Ngày thông báo</th>
+                                <th>{{ notif_labels[0] }}</th>
+                                <th>{{ notif_labels[1] }}</th>
+                                <th>{{ notif_labels[2] }}</th>
+                                <th>{{ notif_labels[3] }}</th>
+                                <th>{{ notif_labels[4] }}</th>
+                                <th>{{ notif_labels[5] }}</th>
+                                <th>{{ notif_labels[6] }}</th>
+                                <th>{{ notif_labels[7] }}</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for task in tasks %}
+                            <tr data-task-id="{{ task.task_id }}" style="background-color: {{ loop.cycle('#ffffff', '#e3f2fd') }};">
+                                <td class="sticky-col">{{ loop.index }}</td>
+                                <td class="sticky-col sticky-col-2" contenteditable="true">{{ task.title }}</td>
+                                <td contenteditable="true">{{ task.description }}</td>
+                                <td><input type="datetime-local" value="{{ (task.start_date or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.end_date or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.deadline or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notification_time or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif1 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif2 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif3 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif4 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif5 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif6 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif7 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td><input type="datetime-local" value="{{ (task.notif8 or '')|replace(' ', 'T') }}" placeholder="--/--/---- --:--"></td>
+                                <td>
+                                <select>
+                                    <option {% if task.status == 'pending' %}selected{% endif %}>pending</option>
+                                    <option {% if task.status == 'in progress' %}selected{% endif %}>in progress</option>
+                                    <option {% if task.status == 'completed' %}selected{% endif %}>completed</option>
+                                </select>
+                                </td>
+                                <td>
+                                    <button class="btn btn-outline-success btn-sm me-1" title="Lưu" onclick="saveRow(this)">
+                                      <i class="fas fa-save"></i>
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm me-1" title="Test Telegram" onclick="testTask(this)">
+                                      <i class="fab fa-telegram-plane"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" title="Xóa" onclick="deleteRow(this)">
+                                      <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                  </td>
+                            </tr>
+                            {% endfor %}
+                            <!-- Dòng thêm mới sẽ được chèn bằng JS khi click nút Thêm dòng mới -->
+                            </tbody>
+                        </table>
                 </div>
+              </div>
             {% else %}
                 <div class="text-center py-5">
                     <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
@@ -250,4 +253,178 @@
         color: white !important;
     }
     </style>
+
+    <script>
+    function addNewTaskRow() {
+      const tbody = document.querySelector('.table-editable tbody');
+      const row = tbody.insertRow();
+    
+      // So le màu giống các dòng cũ
+      if ((tbody.rows.length % 2) === 0) row.style.backgroundColor = '#e3f2fd';
+    
+      // Đánh dấu là dòng mới (chưa có task_id)
+      row.setAttribute('data-task-id', '');
+    
+      // TẠO ĐỦ 16 Ô
+      for (let i = 0; i < 16; i++) row.insertCell();
+    
+      // STT
+      row.cells[0].innerText = tbody.rows.length;
+    
+      // Tiêu đề + Mô tả (editable)
+      row.cells[1].contentEditable = "true";
+      row.cells[1].innerText = '';
+      row.cells[2].contentEditable = "true";
+      row.cells[2].innerText = '';
+    
+      // Bắt đầu, Kết thúc, Deadline, Ngày thông báo
+      row.cells[3].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';
+      row.cells[4].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';
+      row.cells[5].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';
+      row.cells[6].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';
+    
+      // 8 cột thông báo bổ sung (notif1..notif8)
+      row.cells[7].innerHTML  = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif1
+      row.cells[8].innerHTML  = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif2
+      row.cells[9].innerHTML  = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif3
+      row.cells[10].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif4
+      row.cells[11].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif5
+      row.cells[12].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif6
+      row.cells[13].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif7
+      row.cells[14].innerHTML = '<input type="datetime-local" placeholder="--/--/---- --:--">';  // notif8
+    
+      // Trạng thái
+      row.cells[15].innerHTML = `
+        <select>
+          <option>pending</option>
+          <option>in progress</option>
+          <option>completed</option>
+        </select>
+      `;
+    
+      // Thao tác (chèn sau cột trạng thái – nếu bố cục bạn để Thao tác ở cuối bảng, hãy điều chỉnh index)
+      // Nếu Thao tác là cột cuối cùng (thứ 17) thì thêm 1 cell nữa:
+      const actionsCell = row.insertCell();
+      actionsCell.innerHTML = `
+        <button class="btn btn-outline-success btn-sm me-1" title="Lưu" onclick="saveRow(this)">
+          <i class="fas fa-save"></i>
+        </button>
+        <button class="btn btn-outline-primary btn-sm me-1" title="Test Telegram" onclick="testTask(this)">
+          <i class="fab fa-telegram-plane"></i>
+        </button>
+        <button class="btn btn-outline-danger btn-sm" title="Xóa" onclick="deleteRow(this)">
+          <i class="fas fa-trash-alt"></i>
+        </button>
+      `;
+    }
+    </script>
+
+<script>
+    function getRowData(btn) {
+        const tr = btn.closest('tr');
+        const tds = tr.querySelectorAll('td');
+        return {
+            tr,
+            task_id: tr.getAttribute('data-task-id') || '',
+            title: tds[1].innerText.trim(),
+            description: tds[2].innerText.trim(),
+            start_date: tds[3].querySelector('input').value,
+            end_date: tds[4].querySelector('input').value,
+            deadline: tds[5].querySelector('input').value,
+            notification_time: tds[6].querySelector('input').value,
+            notif1: tds[7].querySelector('input').value,
+            notif2: tds[8].querySelector('input').value,
+            notif3: tds[9].querySelector('input').value,
+            notif4: tds[10].querySelector('input').value,
+            notif5: tds[11].querySelector('input').value,
+            notif6: tds[12].querySelector('input').value,
+            notif7: tds[13].querySelector('input').value,
+            notif8: tds[14].querySelector('input').value,
+            status: tds[15].querySelector('select').value
+        };
+    }
+
+    function saveRow(btn) {
+        const data = getRowData(btn);
+        const isNew = !data.task_id;
+
+        const url = isNew ? '/api/task' : `/api/task/${data.task_id}`;
+        const payload = {
+            title: data.title,
+            description: data.description,
+            start_date: data.start_date,
+            end_date: data.end_date,
+            deadline: data.deadline,
+            notification_time: data.notification_time,
+            // THÊM 8 FIELD THÔNG BÁO
+            notif1: data.notif1,
+            notif2: data.notif2,
+            notif3: data.notif3,
+            notif4: data.notif4,
+            notif5: data.notif5,
+            notif6: data.notif6,
+            notif7: data.notif7,
+            notif8: data.notif8,
+            status: data.status
+        };
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+            if (isNew && res.task_id) {
+                data.tr.setAttribute('data-task-id', res.task_id); // gắn task_id cho dòng mới
+            }
+            showFlash(res.message || 'Lưu thành công!', 'success');
+            } else {
+            showFlash(res.message || res.error || 'Lưu không thành công', 'error');
+            }
+        })
+        .catch(() => showFlash('Lỗi kết nối khi lưu!', 'error'));
+        }
+
+
+        function testTask(btn) {
+        const { task_id } = getRowData(btn);
+        if (!task_id) return showFlash('Bạn cần lưu để tạo task trước khi test.', 'error');
+        fetch(`/api/task/${task_id}/test_notification`, { method:'POST' })
+            .then(r=>r.json())
+            .then(res => showFlash(res.message || 'Đã gửi test', res.status))
+            .catch(()=> showFlash('Lỗi test Telegram!', 'error'));
+        }
+
+        function deleteRow(btn) {
+        const { tr, task_id } = getRowData(btn);
+        if (!confirm('Bạn có chắc muốn xóa task này không?')) return;
+        if (!task_id) { tr.remove(); return; } // dòng mới chưa lưu
+        fetch(`/api/task/${task_id}`, { method:'DELETE' })
+            .then(r=>r.json())
+            .then(res=>{
+            if (res.status === 'success') { tr.remove(); showFlash('Đã xóa tác vụ!', 'success'); }
+            else { showFlash(res.message || 'Xóa không thành công', 'error'); }
+            })
+            .catch(()=> showFlash('Lỗi xóa!', 'error'));
+        }
+        
+    // Hàm flash đơn giản
+    // Hàm flash đơn giản: hiện 1 alert nổi (bạn có thể code hiện alert-bootstrap, hoặc append vào div flash ở layout như Flask)
+    function showFlash(msg, status) {
+        let color = (status === 'success') ? 'alert-success' : 'alert-danger';
+        let html = `<div class="alert ${color} alert-dismissible fade show position-fixed top-0 end-0 m-4" role="alert" style="z-index: 9999;">
+            ${msg}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+        document.body.insertAdjacentHTML('beforeend', html);
+        setTimeout(() => {
+            let alerts = document.querySelectorAll('.alert');
+            alerts.forEach(a => a.classList.remove('show'));
+            setTimeout(() => alerts.forEach(a => a.remove()), 350);
+        }, 2500);
+    }
+    </script>
+
 {% endblock %}

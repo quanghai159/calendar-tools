@@ -204,12 +204,73 @@
             </div>
           </div>
 
+
+          <!-- Tùy chỉnh tiêu đề 8 cột thông báo -->
+          <div class="mb-4 mt-4">
+            <h5 class="text-success mb-3 d-flex align-items-center">
+              <i class="fas fa-bell me-2"></i>Tùy chỉnh tiêu đề các cột thông báo
+            </h5>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 1</label>
+                <input type="text" class="form-control" name="notif_label_1"
+                      value="{{ current.get('notif_label_1','Thông báo 1') }}"
+                      placeholder="Ví dụ: Báo cáo tuần">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 2</label>
+                <input type="text" class="form-control" name="notif_label_2"
+                      value="{{ current.get('notif_label_2','Thông báo 2') }}"
+                      placeholder="Ví dụ: Báo cáo tháng">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 3</label>
+                <input type="text" class="form-control" name="notif_label_3"
+                      value="{{ current.get('notif_label_3','Thông báo 3') }}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 4</label>
+                <input type="text" class="form-control" name="notif_label_4"
+                      value="{{ current.get('notif_label_4','Thông báo 4') }}">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 5</label>
+                <input type="text" class="form-control" name="notif_label_5"
+                      value="{{ current.get('notif_label_5','Thông báo 5') }}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 6</label>
+                <input type="text" class="form-control" name="notif_label_6"
+                      value="{{ current.get('notif_label_6','Thông báo 6') }}">
+              </div>
+
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 7</label>
+                <input type="text" class="form-control" name="notif_label_7"
+                      value="{{ current.get('notif_label_7','Thông báo 7') }}">
+              </div>
+              <div class="col-md-6 mb-3">
+                <label class="form-label">Thông báo 8</label>
+                <input type="text" class="form-control" name="notif_label_8"
+                      value="{{ current.get('notif_label_8','Thông báo 8') }}">
+              </div>
+            </div>
+
+            <div class="form-text">
+              Đặt tên cột theo nhu cầu: Ví dụ “Báo cáo tuần”, “Báo cáo tháng”, “Nhắc họp team”...
+            </div>
+          </div>
+
           <div class="mt-4 d-flex gap-2">
             <button type="submit" class="btn btn-primary">
               <i class="fas fa-save me-1"></i>Lưu cài đặt
             </button>
             <a href="{{ url_for('index') }}" class="btn btn-secondary">Hủy</a>
           </div>
+
         </form>
       </div>
     </div>

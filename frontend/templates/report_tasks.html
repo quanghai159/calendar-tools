@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Báo cáo tác vụ{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="text-success"><i class="fas fa-clipboard-list me-2"></i> Báo cáo tác vụ</h2>
+    <a class="btn btn-secondary btn-sm" href="{{ url_for('view_tasks') }}"><i class="fas fa-arrow-left me-1"></i>Quay lại</a>
+  </div>
+
+  <form class="row g-2 mb-3" method="GET" action="{{ url_for('report_tasks') }}">
+    <div class="col-md-2">
+      <label class="form-label mb-1">Trong vòng (ngày)</label>
+      <input type="number" min="1" class="form-control" name="days" value="{{ days or 7 }}">
+    </div>
+    <div class="col-md-3">
+      <label class="form-label mb-1">Từ khóa</label>
+      <input type="text" class="form-control" name="q" value="{{ q or '' }}" placeholder="Tiêu đề hoặc mô tả...">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label mb-1">Trạng thái</label>
+      <select class="form-select" name="status">
+        <option value="">-- Tất cả --</option>
+        <option value="pending" {{ 'selected' if status=='pending' }}>pending</option>
+        <option value="in progress" {{ 'selected' if status=='in progress' }}>in progress</option>
+        <option value="completed" {{ 'selected' if status=='completed' }}>completed</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label mb-1">Loại</label>
+      <input type="text" class="form-control" name="category" value="{{ category or '' }}" placeholder="VD: work">
+    </div>
+    <div class="col-md-3 d-flex align-items-end">
+      <button class="btn btn-primary me-2"><i class="fas fa-search me-1"></i>Lọc</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('report_tasks') }}">Xóa lọc</a>
+    </div>
+  </form>
+
+  <div class="task-table-wrapper" style="overflow-x:auto;">
+    <table class="table table-striped task-table" style="min-width: 1900px;">
+      <thead>
+        <tr>
+          <th class="sticky-col">STT</th>
+          <th class="sticky-col sticky-col-2">Tiêu đề</th>
+          <th>Mô tả</th>
+          <th>Bắt đầu</th>
+          <th>Kết thúc</th>
+          <th>Deadline</th>
+          <th>Ngày thông báo</th>
+          <th>{{ notif_labels[0] }}</th>
+          <th>{{ notif_labels[1] }}</th>
+          <th>{{ notif_labels[2] }}</th>
+          <th>{{ notif_labels[3] }}</th>
+          <th>{{ notif_labels[4] }}</th>
+          <th>{{ notif_labels[5] }}</th>
+          <th>{{ notif_labels[6] }}</th>
+          <th>{{ notif_labels[7] }}</th>
+          <th>Trạng thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr style="background-color: {{ loop.cycle('#ffffff', '#e3f2fd') }};">
+          <td class="sticky-col">{{ loop.index }}</td>
+          <td class="sticky-col sticky-col-2">{{ task.title }}</td>
+          <td>{{ task.description }}</td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm"
+                   value="{{ (task.start_date or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm"
+                   value="{{ (task.end_date or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm"
+                   value="{{ (task.deadline or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notification_time' in task._urgent else ('time-hit' if 'notification_time' in task._hits else '') }}"
+                   value="{{ (task.notification_time or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif1' in task._urgent else ('time-hit' if 'notif1' in task._hits else '') }}"
+                   value="{{ (task.notif1 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif2' in task._urgent else ('time-hit' if 'notif2' in task._hits else '') }}"
+                   value="{{ (task.notif2 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif3' in task._urgent else ('time-hit' if 'notif3' in task._hits else '') }}"
+                   value="{{ (task.notif3 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif4' in task._urgent else ('time-hit' if 'notif4' in task._hits else '') }}"
+                   value="{{ (task.notif4 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif5' in task._urgent else ('time-hit' if 'notif5' in task._hits else '') }}"
+                   value="{{ (task.notif5 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif6' in task._urgent else ('time-hit' if 'notif6' in task._hits else '') }}"
+                   value="{{ (task.notif6 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif7' in task._urgent else ('time-hit' if 'notif7' in task._hits else '') }}"
+                   value="{{ (task.notif7 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>
+            <input type="datetime-local"
+                   class="form-control form-control-sm {{ 'time-hit-urgent' if 'notif8' in task._urgent else ('time-hit' if 'notif8' in task._hits else '') }}"
+                   value="{{ (task.notif8 or '')|replace(' ', 'T') }}"
+                   placeholder="--/--/---- --:--"
+                   readonly>
+          </td>
+          <td>{{ task.status }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="16" class="text-center text-muted py-4">Không có tác vụ nào trong khoảng thời gian đã chọn.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

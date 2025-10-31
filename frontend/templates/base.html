@@ -43,7 +43,18 @@
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="{{ url_for('calendar_tools_home') }}">
                                 <i class="fas fa-calendar-alt me-2"></i>Calendar Tools
-                            </a></li>
+                                <a class="dropdown-item" href="{{ url_for('view_tasks') }}">
+                                    <i class="fas fa-list-ul me-2"></i>Danh sách tác vụ
+                                  </a>
+                                  <a class="dropdown-item" href="{{ url_for('create_simple_task') }}">
+                                    <i class="fas fa-plus me-2"></i>Tạo tác vụ mới
+                                  </a>
+                                  <a class="dropdown-item" href="{{ url_for('report_tasks') }}">
+                                    <i class="fas fa-chart-bar me-2"></i>Báo cáo
+                                  </a>
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            </li>
                             <li><a class="dropdown-item" href="https://github.com/quanghai159/hunonic-banner-tools" target="_blank">
                                 <i class="fas fa-image me-2"></i>Banner Automation
                             </a></li>

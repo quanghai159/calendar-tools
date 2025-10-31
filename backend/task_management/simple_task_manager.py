@@ -94,6 +94,14 @@ class SimpleTaskManager:
                 'start_date': task_data['start_date'],
                 'end_date': task_data['end_date'],
                 'deadline': task_data['deadline'],
+                'notif1': task_data.get('notif1',''),
+                'notif2': task_data.get('notif2',''),
+                'notif3': task_data.get('notif3',''),
+                'notif4': task_data.get('notif4',''),
+                'notif5': task_data.get('notif5',''),
+                'notif6': task_data.get('notif6',''),
+                'notif7': task_data.get('notif7',''),
+                'notif8': task_data.get('notif8',''),
                 'notification_time': task_data.get('notification_time', ''),
                 'category': task_data.get('category', 'general'),
                 'priority': task_data.get('priority', 'medium'),
@@ -106,9 +114,10 @@ class SimpleTaskManager:
             with self.db.get_connection() as conn:
                 query = """
                 INSERT INTO tasks 
-                (task_id, user_id, title, description, start_date, end_date, deadline, 
-                notification_time, category, priority, status, created_at, last_modified)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (task_id, user_id, title, description, start_date, end_date, deadline,
+                notification_time, category, priority, status, created_at, last_modified,
+                notif1, notif2, notif3, notif4, notif5, notif6, notif7, notif8)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """
                 
                 params = (
@@ -124,7 +133,9 @@ class SimpleTaskManager:
                     task_record['priority'],
                     task_record['status'],
                     task_record['created_at'],
-                    task_record['last_modified']
+                    task_record['last_modified'],
+                    task_record['notif1'], task_record['notif2'], task_record['notif3'], task_record['notif4'],
+                    task_record['notif5'], task_record['notif6'], task_record['notif7'], task_record['notif8']
                 )
                 
                 self.db.execute_insert(conn, query, params)
@@ -288,6 +299,42 @@ class SimpleTaskManager:
                 
         except Exception as e:
             print(f"❌ Error updating task status: {e}")
+            return False
+
+    def update_task(self, task_id: str, updates: Dict[str, Any]) -> bool:
+        if not task_id:
+            print("❌ update_task: missing task_id")
+            return False
+        try:
+            allowed_fields = [
+                'title','description','start_date','end_date','deadline',
+                'notification_time','category','priority','status',
+                'notif1','notif2','notif3','notif4','notif5','notif6','notif7','notif8'
+            ]
+            set_strs, params = [], []
+            for f in allowed_fields:
+                if f in updates:
+                    set_strs.append(f"{f} = ?")
+                    params.append(updates[f])
+            if not set_strs:
+                return False
+
+            set_strs.append("last_modified = ?")
+            params.append(datetime.now().isoformat())
+            params.append(task_id)
+
+            sql = f"UPDATE tasks SET {', '.join(set_strs)} WHERE task_id = ?"
+            with self.db.get_connection() as conn:
+                cur = conn.cursor()
+                cur.execute(sql, tuple(params))
+                conn.commit()
+                if cur.rowcount <= 0:
+                    print(f"⚠️ update_task: no rows affected for {task_id}")
+                    return False
+            print(f"✅ Task {task_id} updated: {updates}")
+            return True
+        except Exception as e:
+            print(f"❌ Error updating task {task_id}: {e}")
             return False
     
     def _schedule_notification(self, task_id: str, event_id: str, notification_time: str):

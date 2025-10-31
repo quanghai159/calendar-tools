@@ -192,17 +192,35 @@ def login():
         # Đăng nhập
         user = firebase_auth.sign_in_with_email_and_password(email, password)
         
-        if user:
-            # Lưu thông tin vào session
-            session['user_id'] = user['uid']
-            session['user_email'] = user['email']
-            session['id_token'] = user['id_token']
+        if user and (user.get('uid') or user.get('localId')):
+            session['user_id'] = user.get('uid') or user.get('localId')
+            session['user_email'] = user.get('email')
+            session['id_token'] = user.get('idToken') or user.get('id_token') or None
+
+            # Upsert hồ sơ user vào bảng users
+            db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
+            uid = user.get('uid') or user.get('localId')
+            email_val = user.get('email', '')
+            display_name = (email_val.split('@')[0] if email_val else uid)
+
+            with sqlite3.connect(db_path) as conn:
+                conn.execute("""
+                    INSERT INTO users (user_id, display_name, email, phone_number, created_at, updated_at)
+                    VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                    ON CONFLICT(user_id) DO UPDATE SET
+                        display_name = excluded.display_name,
+                        email        = excluded.email,
+                        phone_number = COALESCE(excluded.phone_number, phone_number),
+                        updated_at   = datetime('now')
+                """, (uid, display_name, email_val, None))
+                conn.commit()
             
             flash('Đăng nhập thành công!', 'success')
             next_url = request.args.get('next') or url_for('index')
             return redirect(next_url)
         else:
             flash('Email hoặc mật khẩu không đúng', 'error')
+            return render_template('login.html')
     
     return render_template('login.html')
 
@@ -224,46 +242,53 @@ def register():
         
         # Đăng ký
         user = firebase_auth.create_user_with_email_and_password(email, password)
-        
-        if user:
-            # Tự động đăng nhập sau khi đăng ký
-            session['user_id'] = user['uid']
-            session['user_email'] = user['email']
-            session['id_token'] = user['id_token']
 
-            
-            db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
-            uid = user['localId']  # Firebase UID
+        # **Nếu user trả về lỗi hoặc thiếu trường, return luôn**
+        if not user or not ('localId' in user or 'uid' in user):
+            flash('Lỗi đăng ký. Email có thể đã được sử dụng', 'error')
+            return render_template('register.html')
+        # Đảm bảo không truy cập user['id_token'], dùng get
+        session['user_id'] = user.get('uid') or user.get('localId')
+        session['user_email'] = user.get('email')
+        session['id_token'] = user.get('idToken') or user.get('id_token') or None
 
-            with sqlite3.connect(db_path) as conn:
-                # Nhóm mặc định 'member'
-                conn.execute(
-                    "INSERT OR IGNORE INTO user_groups (group_id, group_name) VALUES (?,?)",
-                    ('member','Member')
-                )
-                conn.execute(
-                    "INSERT OR IGNORE INTO user_group_memberships (user_id, group_id) VALUES (?,?)",
-                    (uid,'member')
-                )
-                # Tool calendar-tools + cấp access
-                conn.execute(
-                    "INSERT OR IGNORE INTO tools (tool_id, tool_name) VALUES (?,?)",
-                    ('calendar-tools','Calendar Tools')
-                )
-                conn.execute(
-                    "INSERT OR IGNORE INTO user_tool_access (user_id, tool_id) VALUES (?,?)",
-                    (uid,'calendar-tools')
-                )
-                conn.commit()
-            
-            flash('Đăng ký thành công!', 'success')
+        # Upsert hồ sơ user vào bảng users sau đăng ký
+        db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
+        uid = user.get('localId') or user.get('uid')
+        email_val = user.get('email', '')
+        display_name = (email_val.split('@')[0] if email_val else uid)
+        with sqlite3.connect(db_path) as conn:
+            conn.execute("""
+                INSERT INTO users (user_id, display_name, email, phone_number, created_at, updated_at)
+                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                ON CONFLICT(user_id) DO UPDATE SET
+                    display_name = excluded.display_name,
+                    email        = excluded.email,
+                    phone_number = COALESCE(excluded.phone_number, phone_number),
+                    updated_at   = datetime('now')
+            """, (uid, display_name, email_val, None))
+            # Gán nhóm member/tool/quyền mặc định Y NHƯ BẠN ĐÃ CODE...
+            conn.execute(
+                "INSERT OR IGNORE INTO user_groups (group_id, group_name) VALUES (?,?)",
+                ('member','Member')
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO user_group_memberships (user_id, group_id) VALUES (?,?)",
+                (uid,'member')
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO tools (tool_id, tool_name) VALUES (?,?)",
+                ('calendar-tools','Calendar Tools')
+            )
+            conn.execute(
+                "INSERT OR IGNORE INTO user_tool_access (user_id, tool_id) VALUES (?,?)",
+                (uid,'calendar-tools')
+            )
             for pid in ['calendar-tools:task.view','calendar-tools:task.create','calendar-tools:notification.send']:
                 conn.execute("INSERT OR IGNORE INTO user_permissions (user_id, permission_id) VALUES (?,?)", (uid, pid))
             conn.commit()
-            return redirect(url_for('index'))
-        else:
-            flash('Lỗi đăng ký. Email có thể đã được sử dụng', 'error')
-    
+        flash('Đăng ký thành công!', 'success')
+        return redirect(url_for('index'))
     return render_template('register.html')
 
 @app.route('/logout')
@@ -324,7 +349,9 @@ def profile_settings():
         "quiet_hours_enabled", "quiet_hours_range",
         "daily_digest_enabled", "daily_digest_time",
         "crm_api_key", "crm_endpoint", "ga_property_id", "webhook_url",
-        "2fa_enabled", "backup_email", "allowed_ips"
+        "2fa_enabled", "backup_email", "allowed_ips",
+        "notif_label_1","notif_label_2","notif_label_3","notif_label_4",
+        "notif_label_5","notif_label_6","notif_label_7","notif_label_8"
     ]
 
     # Các key theo tool (calendar-tools)
@@ -405,6 +432,16 @@ def profile_settings():
         "default_category": get_val("default_category", calendar_tool_id, "work"),
         "notification_lead_time": get_val("notification_lead_time", calendar_tool_id, "30"),
         "auto_add_telegram_reminder": get_val("auto_add_telegram_reminder", calendar_tool_id, "1"),
+
+        # Notification column labels (per-user)
+        "notif_label_1": get_val("notif_label_1", default="Thông báo 1"),
+        "notif_label_2": get_val("notif_label_2", default="Thông báo 2"),
+        "notif_label_3": get_val("notif_label_3", default="Thông báo 3"),
+        "notif_label_4": get_val("notif_label_4", default="Thông báo 4"),
+        "notif_label_5": get_val("notif_label_5", default="Thông báo 5"),
+        "notif_label_6": get_val("notif_label_6", default="Thông báo 6"),
+        "notif_label_7": get_val("notif_label_7", default="Thông báo 7"),
+        "notif_label_8": get_val("notif_label_8", default="Thông báo 8"),
     }
 
     return render_template('profile_settings.html', current=current)    
@@ -416,13 +453,17 @@ def profile_settings():
 def view_tasks():
     """Xem danh sách tasks"""
     try:
-        user_id = session.get('user_id')  # Lấy user_id từ session
+        user_id = session.get('user_id')
+        settings_mgr = UserSettingsManager(app.config.get("DB_PATH","database/calendar_tools.db"))
+        notif_labels = []
+        for i in range(1,9):
+            notif_labels.append(settings_mgr.get_setting(user_id, f'notif_label_{i}', tool_id=None, default=f'Thông báo {i}') or f'Thông báo {i}')  # Lấy user_id từ session
         tasks = task_manager.get_tasks(user_id=user_id)  # Filter theo user
-        return render_template('tasks_list.html', tasks=tasks)
+        return render_template('tasks_list.html', tasks=tasks, notif_labels=notif_labels)
     except Exception as e:
         print(f"❌ Error getting tasks: {e}")
         flash(f'Lỗi lấy danh sách tasks: {str(e)}', 'error')
-        return render_template('tasks_list.html', tasks=[])
+        return render_template('tasks_list.html', tasks=[],notif_labels=notif_labels)
 
 @app.route('/task/<task_id>')
 def view_task_detail(task_id):
@@ -455,6 +496,117 @@ def update_task_status(task_id):
         flash(f'Lỗi cập nhật trạng thái: {str(e)}', 'error')
     
     return redirect(url_for('view_task_detail', task_id=task_id))
+
+@app.route('/reports/tasks')
+@require_login
+@require_tool_access('calendar-tools')
+@require_permission('calendar-tools:task.view')
+def report_tasks():
+    from datetime import datetime, timedelta
+    import sqlite3
+
+    user_id = session.get('user_id')
+    db_path = app.config.get("DB_PATH","database/calendar_tools.db")
+
+    # Lấy tham số lọc
+    days = int(request.args.get('days', 7))  # mặc định 7 ngày tới
+    status = request.args.get('status', '').strip()
+    keyword = request.args.get('q', '').strip()
+    category = request.args.get('category', '').strip()
+
+    now = datetime.now()
+    end = now + timedelta(days=days)
+
+    # Các cột thời điểm thông báo cần xét
+    time_cols = ["notification_time","notif1","notif2","notif3","notif4","notif5","notif6","notif7","notif8"]
+
+    # Điều kiện: cột có giá trị, >= now, <= end
+    win_cond = " OR ".join([
+        f"({c} IS NOT NULL AND {c} != '' AND datetime(replace({c}, 'T',' ')) >= ? AND datetime(replace({c}, 'T',' ')) <= ?)"
+        for c in time_cols
+    ])
+
+    where = ["user_id = ?"]
+    params = [user_id]
+
+    # Bổ sung lọc tùy chọn (đặt trước)
+    if status:
+        where.append("status = ?")
+        params.append(status)
+    if category:
+        where.append("category = ?")
+        params.append(category)
+    if keyword:
+        where.append("(title LIKE ? OR description LIKE ?)")
+        params.extend([f"%{keyword}%", f"%{keyword}%"])
+
+    # Tham số cho các cột notification/time
+    now_s = now.strftime('%Y-%m-%d %H:%M:%S')
+    end_s = end.strftime('%Y-%m-%d %H:%M:%S')
+    for _ in time_cols:
+        params.extend([now_s, end_s])
+
+    sql = f"""
+    SELECT *
+    FROM tasks
+    WHERE {" AND ".join(where)} AND ({win_cond})
+    ORDER BY datetime(replace(COALESCE(notification_time, notif1, notif2, notif3, notif4, notif5, notif6, notif7, notif8), 'T',' ')) ASC
+    LIMIT 500
+    """
+
+    # Lấy nhãn 8 cột từ settings (dùng lại như /tasks)
+    settings_mgr = UserSettingsManager(app.config.get("DB_PATH","database/calendar_tools.db"))
+    notif_labels = []
+    for i in range(1,9):
+        lbl = settings_mgr.get_setting(user_id, f'notif_label_{i}', tool_id=None, default=f'Thông báo {i}') or f'Thông báo {i}'
+        notif_labels.append(lbl)
+
+    # Query
+    try:
+        with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(sql, tuple(params)).fetchall()
+            tasks = [dict(r) for r in rows]
+    except Exception as e:
+        print(f"❌ Report query error: {e}")
+        tasks = []
+
+    from datetime import datetime
+
+    def parse_dt(s):
+        if not s:
+            return None
+        s = str(s).strip().replace('T', ' ')
+        # thử nhiều format phổ biến
+        for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+            try:
+                return datetime.strptime(s, fmt)
+            except:
+                pass
+        return None
+
+    hit_cols = ["notification_time","notif1","notif2","notif3","notif4","notif5","notif6","notif7","notif8"]
+    now_dt = now
+    end_dt = end
+    urgent_dt = now + timedelta(days=3)
+
+    for t in tasks:
+        t["_hits"] = set()
+        t["_urgent"] = set()
+        for col in hit_cols:
+            dt = parse_dt(t.get(col))
+            if dt and now_dt <= dt <= end_dt:
+                t["_hits"].add(col)
+                if dt <= urgent_dt:
+                    t["_urgent"].add(col)    
+
+    return render_template('report_tasks.html',
+                           tasks=tasks,
+                           notif_labels=notif_labels,
+                           days=days,
+                           q=keyword,
+                           status=status,
+                           category=category)
 
 @app.route('/process_notifications')
 def process_notifications():
@@ -510,6 +662,58 @@ def test_notification(task_id):
         flash(f'Lỗi test thông báo: {str(e)}', 'error')
     
     return redirect(url_for('view_tasks'))
+
+@app.route('/api/task', methods=['POST'])
+def api_create_task():
+    try:
+        data = request.get_json() or {}
+        task_id = task_manager.create_task({
+            'title': data.get('title','').strip(),
+            'description': data.get('description',''),
+            'start_date': data.get('start_date',''),
+            'end_date': data.get('end_date',''),
+            'deadline': data.get('deadline',''),
+            'notification_time': data.get('notification_time',''),
+            'notif1': data.get('notif1',''), 'notif2': data.get('notif2',''),
+            'notif3': data.get('notif3',''), 'notif4': data.get('notif4',''),
+            'notif5': data.get('notif5',''), 'notif6': data.get('notif6',''),
+            'notif7': data.get('notif7',''), 'notif8': data.get('notif8',''),
+            'user_id': session.get('user_id'),
+            'category': 'general',
+            'priority': 'medium'
+        })
+        return jsonify(status='success', message='Tạo tác vụ thành công!', task_id=task_id)
+    except Exception as e:
+        return jsonify(status='error', message=str(e)), 400
+
+@app.route('/api/task/<task_id>/test_notification', methods=['POST'])
+def api_test_notification(task_id):
+    try:
+        # copy toàn bộ logic từ test_notification ở trên
+        # nhưng thay vì flash + redirect, trả về JSON trạng thái
+        tasks = task_manager.get_tasks()
+        task = next((t for t in tasks if t['task_id'] == task_id), None)
+        if not task:
+            return jsonify(status='error', message='Không tìm thấy task'), 404
+        notification = {
+            'notification_id': f"test_{task_id}_{int(datetime.now().timestamp())}",
+            'task_id': task_id,
+            'title': task['title'],
+            'description': task['description'],
+            'deadline': task['deadline'],
+            'priority': task['priority'],
+        }
+        if telegram_notifier:
+            notification['user_id'] = task.get('user_id') or session.get('user_id')
+            sent = notification_scheduler._send_notification(notification)
+            if sent:
+                return jsonify(status='success', message='Thông báo test đã được gửi qua Telegram!')
+            else:
+                return jsonify(status='error', message='Lỗi gửi thông báo test')
+        else:
+            return jsonify(status='error', message='Telegram notifier chưa được cấu hình')
+    except Exception as e:
+        return jsonify(status='error', message=f'Lỗi test thông báo: {str(e)}'), 500
 
 @app.route('/test_telegram')
 @require_login
@@ -569,28 +773,31 @@ def api_tasks():
             'error': str(e)
         }), 500
 
-@app.route('/api/task/<task_id>')
-def api_task_detail(task_id):
-    """API lấy chi tiết task"""
+@app.route('/api/task/<task_id>', methods=['POST'])
+def api_update_task(task_id):
     try:
-        tasks = task_manager.get_tasks()
-        task = next((t for t in tasks if t['task_id'] == task_id), None)
-        
-        if not task:
-            return jsonify({
-                'status': 'error',
-                'error': 'Task not found'
-            }), 404
-        
-        return jsonify({
-            'status': 'success',
-            'data': task
-        })
+        data = request.get_json() or {}
+        ok = task_manager.update_task(task_id, data)
+        if ok:
+            return jsonify(status='success', message='Đã lưu tác vụ!')
+        return jsonify(status='error', message='Không có thay đổi hoặc không tìm thấy bản ghi')
     except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'error': str(e)
-        }), 500
+        return jsonify(status='error', message=str(e)), 500
+
+@app.route('/api/task/<task_id>', methods=['DELETE'])
+def api_delete_task(task_id):
+    try:
+        import sqlite3
+        db_path = app.config.get("DB_PATH","database/calendar_tools.db")
+        with sqlite3.connect(db_path) as conn:
+            cur = conn.cursor()
+            cur.execute("DELETE FROM tasks WHERE task_id = ?", (task_id,))
+            conn.commit()
+            if cur.rowcount > 0:
+                return jsonify(status='success', message='Đã xóa tác vụ!')
+            return jsonify(status='error', message='Không tìm thấy tác vụ')
+    except Exception as e:
+        return jsonify(status='error', message=str(e)), 500
 
 @app.route('/calendar-tools')
 @require_login
@@ -615,18 +822,17 @@ def calendar_tools_home():
 
 @app.route('/admin/users')
 @require_login
-@require_permission('calendar-tools:task.view')  # hoặc quyền quản trị thực nếu có
+@require_permission('calendar-tools:task.view')
 def admin_list_users():
     db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
     conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
     users = conn.execute("SELECT * FROM users").fetchall()
     user_infos = []
     for u in users:
-        uid = u['user_id']
-        uname = u.get('display_name','') or u.get('email','')
-        # lấy quyền
-        perms = [r[0] for r in conn.execute("SELECT permission_id FROM user_permissions WHERE user_id=?", (uid,))]
-        user_infos.append({'user_id': uid, 'name': uname, 'perms': perms})
+        # Kiểm tra trả về name/email/sdt hoặc user_id
+        uname = u['display_name'] or u['email'] or u['phone_number'] or u['user_id']
+        perms = [r[0] for r in conn.execute("SELECT permission_id FROM user_permissions WHERE user_id=?", (u['user_id'],))]
+        user_infos.append({'user_id': u['user_id'], 'name': uname, 'perms': perms})
     conn.close()
     return render_template('admin_users.html', users=user_infos)
 
@@ -634,16 +840,34 @@ def admin_list_users():
 @require_login
 @require_permission('calendar-tools:task.view')
 def admin_list_groups():
+    import sqlite3
     db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
     conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
-    groups = conn.execute("SELECT * FROM user_groups").fetchall()
+
+    groups = conn.execute("SELECT group_id, group_name FROM user_groups ORDER BY group_id").fetchall()
     group_infos = []
     for g in groups:
-        users = conn.execute("SELECT user_id FROM user_group_memberships WHERE group_id=?", (g['group_id'],)).fetchall()
+        members = conn.execute("""
+            SELECT m.user_id,
+                    COALESCE(u.display_name, u.email, u.phone_number, m.user_id) AS label,
+                    u.email, u.phone_number
+            FROM user_group_memberships m
+            LEFT JOIN users u ON u.user_id = m.user_id
+            WHERE m.group_id=?
+            ORDER BY label
+        """, (g['group_id'],)).fetchall()
+        member_labels = [
+            (
+                (m['label'] if m['label'] else m['user_id'])
+                + (f" ({m['email']})" if m['email'] else '')
+                + (f" [{m['phone_number']}]" if m['phone_number'] else '')
+            ).strip()
+            for m in members
+            ]
         group_infos.append({
-          'group_id': g['group_id'],
-          'group_name': g['group_name'],
-          'users': [u['user_id'] for u in users]
+            'group_id': g['group_id'],
+            'group_name': g['group_name'],
+            'users': member_labels
         })
     conn.close()
     return render_template('admin_groups.html', groups=group_infos)
@@ -782,21 +1006,42 @@ def admin_edit_group_rights(group_id):
 @require_login
 @require_permission('calendar-tools:task.view')
 def admin_edit_group_members(group_id):
+    import sqlite3
     db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
     conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
-    users = conn.execute("SELECT * FROM users").fetchall()
-    has_users = set([r[0] for r in conn.execute("SELECT user_id FROM user_group_memberships WHERE group_id=?", (group_id,))])
+
+    # Lấy danh sách users (id, display_name, email, phone_number)
+    users = conn.execute("""
+        SELECT user_id, 
+               COALESCE(display_name, '') AS display_name,
+               COALESCE(email, '') AS email,
+               COALESCE(phone_number, '') AS phone_number
+        FROM users
+        ORDER BY COALESCE(display_name, email, phone_number, user_id)
+    """).fetchall()
+
+    # Thành viên hiện có trong nhóm
+    has_users = set(r[0] for r in conn.execute(
+        "SELECT user_id FROM user_group_memberships WHERE group_id=?", (group_id,)
+    ).fetchall())
+
     if request.method == "POST":
-        ticked = set(request.form.getlist("users"))
-        all_user_ids = set([u["user_id"] for u in users])
+        ticked = set(request.form.getlist("users"))  # danh sách user_id được tick
+        all_user_ids = set(u["user_id"] for u in users)
         conn.execute("DELETE FROM user_group_memberships WHERE group_id=?", (group_id,))
         for uid in ticked:
             if uid in all_user_ids:
-                conn.execute("INSERT OR IGNORE INTO user_group_memberships (user_id, group_id) VALUES (?,?)", (uid, group_id))
+                conn.execute(
+                    "INSERT OR IGNORE INTO user_group_memberships (user_id, group_id) VALUES (?,?)",
+                    (uid, group_id)
+                )
         conn.commit()
+        conn.close()
         return redirect(url_for('admin_list_groups'))
+
     conn.close()
-    return render_template('admin_group_members_matrix.html', group_id=group_id, users=users, has_users=has_users)
+    return render_template('admin_group_members_matrix.html',
+                           group_id=group_id, users=users, has_users=has_users)
 
 @app.errorhandler(403)
 def forbidden(e):

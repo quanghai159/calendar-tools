@@ -18,8 +18,8 @@
         <td>{{ g.group_id }}</td>
         <td>{{ g.group_name }}</td>
         <td>
-          {% for u in g.users %}
-            <span class="badge bg-info text-dark">{{ u }}</span>
+          {% for label in g.users %}
+            <span class="badge bg-info text-dark mb-1">{{ label }}</span>
           {% endfor %}
         </td>
         <td>
