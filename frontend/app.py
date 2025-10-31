@@ -1051,8 +1051,8 @@ if __name__ == '__main__':
     if config:
         app.run(
             host=config.get_value('app.host', '0.0.0.0'),
-            port=config.get_value('app.port', 5000),
+            port=config.get_value('app.port', 5001),
             debug=config.get_value('app.debug', True)
         )
     else:
-        app.run(host='0.0.0.0', port=5000, debug=True)
+        app.run(host='0.0.0.0', port=5001, debug=True)

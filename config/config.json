@@ -38,7 +38,7 @@
     },
     "app": {
       "host": "0.0.0.0",
-      "port": 5000,
+      "port": 5001,
       "debug": true,
       "timezone": "Asia/Ho_Chi_Minh"
     }
