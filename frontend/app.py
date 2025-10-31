@@ -267,14 +267,10 @@ def register():
                     phone_number = COALESCE(excluded.phone_number, phone_number),
                     updated_at   = datetime('now')
             """, (uid, display_name, email_val, None))
-            # Gán nhóm member/tool/quyền mặc định Y NHƯ BẠN ĐÃ CODE...
-            conn.execute(
-                "INSERT OR IGNORE INTO user_groups (group_id, group_name) VALUES (?,?)",
-                ('member','Member')
-            )
+            # Gán nhóm user/tool/quyền mặc định
             conn.execute(
                 "INSERT OR IGNORE INTO user_group_memberships (user_id, group_id) VALUES (?,?)",
-                (uid,'member')
+                (uid,'user')  # Dùng 'user' thay vì 'member'
             )
             conn.execute(
                 "INSERT OR IGNORE INTO tools (tool_id, tool_name) VALUES (?,?)",
@@ -365,14 +361,57 @@ def profile_settings():
         print(f"🔍 Debug: POST request received")
         print(f"🔍 Debug: user_id = {user_id}")
         print(f"🔍 Debug: form data = {dict(request.form)}")
+        
         # Lưu global settings
         for key in global_keys:
             val = request.form.get(key)
             # xử lý checkbox: nếu không có trong form -> off
             if key in ["notify_via_telegram","notify_via_zalo","notify_via_email",
-                       "quiet_hours_enabled","daily_digest_enabled","2fa_enabled"]:
+                    "quiet_hours_enabled","daily_digest_enabled","2fa_enabled"]:
                 val = "1" if request.form.get(key) == "on" else "0"
             settings_mgr.set_setting(user_id, key, val, tool_id=None)
+        
+        # Đồng bộ display_name, phone_number vào bảng users (luôn sync)
+        db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
+        display_name_val = request.form.get('display_name', '').strip()
+        phone_number_val = request.form.get('phone_number', '').strip()
+
+        # Luôn sync với users table (kể cả empty)
+        with sqlite3.connect(db_path) as conn:
+            conn.execute("""
+                UPDATE users 
+                SET display_name = ?,
+                    phone_number = ?,
+                    updated_at = datetime('now')
+                WHERE user_id = ?
+            """, (
+                display_name_val if display_name_val else None,
+                phone_number_val if phone_number_val else None,
+                user_id
+            ))
+            conn.commit()
+        
+        if display_name_val or phone_number_val:
+            with sqlite3.connect(db_path) as conn:
+                # Lấy giá trị hiện tại từ users table
+                user_row = conn.execute("SELECT display_name, phone_number FROM users WHERE user_id = ?", (user_id,)).fetchone()
+                current_display_name = user_row[0] if user_row and user_row[0] else None
+                current_phone = user_row[1] if user_row and user_row[1] else None
+                
+                # Chỉ update nếu có thay đổi
+                if display_name_val or phone_number_val:
+                    conn.execute("""
+                        UPDATE users 
+                        SET display_name = COALESCE(?, display_name),
+                            phone_number = COALESCE(?, phone_number),
+                            updated_at = datetime('now')
+                        WHERE user_id = ?
+                    """, (
+                        display_name_val if display_name_val else None,
+                        phone_number_val if phone_number_val else None,
+                        user_id
+                    ))
+                    conn.commit()
 
         # Lưu calendar-tools settings
         for key in calendar_keys:
@@ -724,7 +763,7 @@ def test_telegram():
     if not telegram_notifier:
         flash('Telegram notifier chưa được cấu hình', 'error')
         return redirect(url_for('index'))
-    
+
     try:
         # Lấy chat_id từ setting của user hiện tại
         settings_mgr = UserSettingsManager(app.config.get("DB_PATH", "database/calendar_tools.db"))

@@ -28,6 +28,7 @@ Ví dụ:
 
 import os
 import sys
+import sqlite3
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 
@@ -122,9 +123,13 @@ class NotificationScheduler:
             
             with self.db.get_connection() as conn:
                 query = """
-                SELECT n.*, t.title, t.description, t.deadline, t.priority
+                SELECT n.*, 
+                    COALESCE(t.title, 'Task đã bị xóa') as title,
+                    COALESCE(t.description, '') as description,
+                    COALESCE(t.deadline, 'N/A') as deadline,
+                    COALESCE(t.priority, 'medium') as priority
                 FROM notifications n
-                JOIN tasks t ON n.task_id = t.task_id
+                LEFT JOIN tasks t ON n.task_id = t.task_id
                 WHERE n.status = 'pending' 
                 AND n.scheduled_time <= ?
                 ORDER BY n.scheduled_time
@@ -132,14 +137,105 @@ class NotificationScheduler:
                 
                 results = self.db.execute_query(conn, query, (current_time,))
                 print(f"Found {len(results)} pending notifications")
-                
-                # Debug: In ra tất cả notifications
+
+                # Debug: In ra chi tiết PENDING notifications với Task name và Telegram ID
+                if len(results) > 0:
+                    print("📋 DETAILED PENDING NOTIFICATIONS:")
+                    for notif in results:
+                        nid = notif.get('notification_id', 'N/A')
+                        task_id = notif.get('task_id', 'N/A')
+                        title = notif.get('title', 'N/A')
+                        scheduled_time = notif.get('scheduled_time', 'N/A')  # Lấy từ notifications.scheduled_time
+                        
+                        # Debug: Kiểm tra tất cả các trường liên quan đến thời gian từ bảng notifications
+                        notif_raw = conn.execute("""
+                            SELECT notification_id, task_id, scheduled_time, status, sent_at, created_at
+                            FROM notifications 
+                            WHERE notification_id = ?
+                        """, (nid,)).fetchone()
+                        
+                        scheduled_from_db = notif_raw[2] if notif_raw and len(notif_raw) > 2 else 'N/A'
+                        sent_at = notif_raw[4] if notif_raw and len(notif_raw) > 4 else None
+                        
+                        # Lấy user_id từ notification hoặc task
+                        user_id = notif.get('user_id')
+                        if not user_id and task_id != 'N/A':
+                            user_row = conn.execute("SELECT user_id FROM tasks WHERE task_id = ?", (task_id,)).fetchone()
+                            user_id = user_row[0] if user_row and user_row[0] else None
+
+                        # Lấy email và telegram_user_id từ users và user_settings
+                        user_email = None
+                        telegram_id = None
+                        if user_id:
+                            # Lấy email từ bảng users
+                            user_info = conn.execute("SELECT email, display_name FROM users WHERE user_id = ?", (user_id,)).fetchone()
+                            if user_info:
+                                user_email = user_info[0]  # email
+                                user_display_name = user_info[1]  # display_name
+                            
+                            # Lấy telegram_user_id từ user_settings
+                            tg_row = conn.execute("""
+                                SELECT setting_value FROM user_settings 
+                                WHERE user_id = ? AND setting_key = 'telegram_user_id' AND tool_id IS NULL
+                                ORDER BY updated_at DESC LIMIT 1
+                            """, (user_id,)).fetchone()
+                            telegram_id = tg_row[0] if tg_row and tg_row[0] else None
+                        
+                        print(f"  📋 PENDING: ID={nid}, Task='{title}' (task_id={task_id})")
+                        print(f"      └─ User: {user_id} ({user_email or 'N/A'}), Telegram: {telegram_id or 'N/A'}")
+                        print(f"      └─ Scheduled Time: {scheduled_time} [Từ cột: notifications.scheduled_time, Raw DB: {scheduled_from_db}]")
+                        print(f"      └─ Status: {notif_raw[3] if notif_raw and len(notif_raw) > 3 else 'N/A'}, Sent At: {sent_at or 'N/A'}")
+                else:
+                    print("📋 No pending notifications found for current time")
+
+                # Debug: In ra các notifications có status='pending' nhưng scheduled_time > now
                 cursor = conn.cursor()
-                cursor.execute("SELECT * FROM notifications ORDER BY scheduled_time")
+                future_pending = cursor.execute("""
+                    SELECT notification_id, task_id, scheduled_time 
+                    FROM notifications 
+                    WHERE status = 'pending' AND scheduled_time > ?
+                    ORDER BY scheduled_time
+                """, (current_time,)).fetchall()
+                if future_pending:
+                    print(f"📋 Future pending notifications ({len(future_pending)}):")
+                    for fp in future_pending:
+                        fp_id = fp[0] if isinstance(fp, (tuple, list)) else fp['notification_id']
+                        fp_task = fp[1] if isinstance(fp, (tuple, list)) else fp['task_id']
+                        fp_time = fp[2] if isinstance(fp, (tuple, list)) else fp['scheduled_time']
+                        
+                        # Lấy thông tin chi tiết từ bảng notifications để hiển thị cột cụ thể
+                        notif_detail = conn.execute("""
+                            SELECT scheduled_time, status, created_at
+                            FROM notifications 
+                            WHERE notification_id = ?
+                        """, (fp_id,)).fetchone()
+                        scheduled_raw = notif_detail[0] if notif_detail and len(notif_detail) > 0 else 'N/A'
+                        
+                        # Lấy task title và user email
+                        task_row = conn.execute("SELECT title, user_id FROM tasks WHERE task_id = ?", (fp_task,)).fetchone()
+                        task_title = task_row[0] if task_row and task_row[0] else 'N/A'
+                        fp_user_id = task_row[1] if task_row and len(task_row) > 1 and task_row[1] else None
+                        fp_email = None
+                        if fp_user_id:
+                            email_row = conn.execute("SELECT email FROM users WHERE user_id = ?", (fp_user_id,)).fetchone()
+                            fp_email = email_row[0] if email_row and email_row[0] else None
+                        
+                        print(f"  ⏰ FUTURE: ID={fp_id}, Task='{task_title}', User={fp_user_id} ({fp_email or 'N/A'})")
+                        print(f"      └─ Scheduled Time: {fp_time} [Từ cột: notifications.scheduled_time, Raw DB value: {scheduled_raw}]")
+
+                # Debug: In ra tất cả notifications (giữ nguyên để so sánh)
+                cursor = conn.cursor()
+                cursor.execute("SELECT notification_id, status, scheduled_time FROM notifications ORDER BY scheduled_time")
                 all_notifications = cursor.fetchall()
                 print(f"All notifications in database: {len(all_notifications)}")
                 for notif in all_notifications:
-                    print(f"  - {notif}")
+                    row = dict(notif) if isinstance(notif, sqlite3.Row) else notif
+                    nid = row['notification_id'] if isinstance(row, dict) else row[0]
+                    status = row['status'] if isinstance(row, dict) else row[1]
+                    sched = row['scheduled_time'] if isinstance(row, dict) else row[2]
+                    print(f"  - ID: {nid}, Status: {status}, Scheduled: {sched} (now: {current_time})")
+
+                return results
                 
                 return results
                     
@@ -173,39 +269,58 @@ class NotificationScheduler:
     def _send_notification(self, notification: Dict[str, Any]) -> bool:
         """Gửi thông báo qua các kênh"""
         try:
+            print(f"🔍 Debug _send_notification: notification_id={notification.get('notification_id')}, task_id={notification.get('task_id')}")
             message = self._prepare_notification_message(notification)
             sent = False
 
             # Lấy user_id của task
             target_user_id = notification.get('user_id')
+            print(f"🔍 Debug: initial target_user_id={target_user_id}")
             if not target_user_id:
                 # Tra DB theo task_id
                 try:
+                    task_id = notification.get('task_id')
+                    print(f"🔍 Debug: Looking up user_id for task_id={task_id}")
                     with self.db.get_connection() as conn:
                         row = conn.execute(
                             "SELECT user_id FROM tasks WHERE task_id = ?",
-                            (notification.get('task_id'),)
+                            (task_id,)
                         ).fetchone()
                         if row and row[0]:
                             target_user_id = row[0]
+                            print(f"🔍 Debug: Found user_id={target_user_id} from tasks table")
+                        else:
+                            print(f"⚠️ Debug: No task found with task_id={task_id}")
                 except Exception as e:
                     print(f"❌ Error fetching task owner: {e}")
 
             # Gửi qua Telegram theo setting user
             if self.telegram_notifier and target_user_id:
+                print(f"🔍 Debug: Getting telegram_user_id for user_id={target_user_id}")
                 chat_id = self._get_user_telegram_id(target_user_id)
+                print(f"🔍 Debug: chat_id={chat_id}")
                 if chat_id:
+                    print(f"🔍 Debug: Sending telegram message to chat_id={chat_id}")
                     if self.telegram_notifier.send_message(chat_id, message):
                         sent = True
                         print(f"✅ Telegram notification sent to {chat_id} for task: {notification.get('title')}")
+                    else:
+                        print(f"❌ Failed to send telegram message to {chat_id}")
                 else:
                     print(f"⚠️ No telegram_user_id setting for user {target_user_id}")
+            else:
+                if not self.telegram_notifier:
+                    print(f"⚠️ Debug: telegram_notifier is None")
+                if not target_user_id:
+                    print(f"⚠️ Debug: target_user_id is None")
 
             # TODO: email / zalo
             return sent
 
         except Exception as e:
             print(f"❌ Error sending notification: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def _prepare_notification_message(self, notification: Dict[str, Any]) -> str:
