@@ -25,7 +25,8 @@ def migrate_users_table(conn):
                 is_active BOOLEAN DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                last_login TIMESTAMP
+                last_login TIMESTAMP,
+                phone_number TEXT,
             )
         """)
         print("   ✅ Tạo bảng users mới")
