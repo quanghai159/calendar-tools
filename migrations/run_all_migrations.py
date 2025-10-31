@@ -37,6 +37,14 @@ def run_all_migrations():
     if ret3.returncode != 0:
         raise SystemExit("Migration 003 failed")
 
+    # Step 4: Update users phone_number (THÊM ĐOẠN NÀY)
+    print("\n" + "=" * 60)
+    print("STEP 4: Updating users phone_number column...")
+    print("=" * 60)
+    ret4 = subprocess.run([sys.executable, os.path.join(current_dir, "004_update_users_phone_number.py")])
+    if ret4.returncode != 0:
+        raise SystemExit("Migration 004 failed")
+
     print("\n" + "=" * 60)
     print("✅ ALL MIGRATIONS COMPLETED SUCCESSFULLY!")
     print("=" * 60)
