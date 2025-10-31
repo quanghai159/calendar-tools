@@ -44,7 +44,7 @@ sys.path.append(parent_dir)
 # Import các module
 from core.database_manager import DatabaseManager
 from user_management.user_registry import UserRegistry
-from task_management.task_creator import TaskCreator
+# from task_management.task_creator import TaskCreator  # Đã xóa TaskCreator
 try:
     from integrations.google_sheets_connector import GoogleSheetsConnector
 except ImportError:
@@ -79,7 +79,7 @@ class CalendarManager:
         
         # Initialize modules
         self.user_registry = UserRegistry(self.db)
-        self.task_creator = TaskCreator(self.db)
+        # self.task_creator = TaskCreator(self.db)  # Đã xóa TaskCreator
         self.sheets_connector = GoogleSheetsConnector(use_mock=True)
         self.date_utils = DateUtils()
         

@@ -105,6 +105,16 @@ if tasks_count > 0:
             print(f"      - {task['task_id']}: user_id='{get_row_value(task, 'user_id')}', title='{get_row_value(task, 'title', 'N/A')}'")
         if len(tasks_invalid_user) > 5:
             print(f"      ... và {len(tasks_invalid_user) - 5} tasks khác")
+
+    # Thống kê notif1-8
+    print(f"\n   📊 THỐNG KÊ NOTIFICATIONS (notif1-8):")
+    notif_stats = {}
+    for i in range(1, 9):
+        notif_key = f'notif{i}'
+        if notif_key in columns:
+            count = cursor.execute(f"SELECT COUNT(*) FROM tasks WHERE {notif_key} IS NOT NULL AND {notif_key} != ''").fetchone()[0]
+            notif_stats[notif_key] = count
+            print(f"      - {notif_key}: {count} tasks có giá trị")
     
     # Hiển thị tasks theo user
     print(f"\n   📝 TASKS THEO USER (top 10 tasks gần nhất):")
@@ -133,6 +143,9 @@ if tasks_count > 0:
         print(f"       Created: {created_at}")
         
         # Hiển thị các trường quan trọng
+        if 'description' in columns and task['description']:
+            desc = task['description']
+            print(f"       Description: {desc[:80]}{'...' if len(desc) > 80 else ''}")
         if 'start_date' in columns and task['start_date']:
             print(f"       Start Date: {task['start_date']}")
         if 'end_date' in columns and task['end_date']:
@@ -141,6 +154,15 @@ if tasks_count > 0:
             print(f"       Deadline: {task['deadline']}")
         if 'notification_time' in columns and task['notification_time']:
             print(f"       Notification Time: {task['notification_time']}")
+        
+        # Hiển thị các cột notif1-8
+        print(f"       Notifications:")
+        for i in range(1, 9):
+            notif_key = f'notif{i}'
+            if notif_key in columns:
+                notif_val = task[notif_key] if task[notif_key] else '(empty)'
+                print(f"         Notif{i}: {notif_val}")
+        
         if 'priority' in columns and task['priority']:
             print(f"       Priority: {task['priority']}")
         if 'category' in columns and task['category']:

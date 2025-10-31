@@ -172,9 +172,16 @@ class SimpleTaskManager:
                 
                 conn.commit()
             
-            # Bước 6: Schedule notification nếu có (sau khi commit)
+            # Bước 6: Schedule notifications nếu có (sau khi commit)
+            # Tạo notification từ notification_time
             if task_data.get('notification_time'):
                 self._schedule_notification_after_commit(task_id, event_id, task_data['notification_time'])
+
+            # Tạo notifications từ notif1-8
+            for i in range(1, 9):
+                notif_key = f'notif{i}'
+                if task_data.get(notif_key):
+                    self._schedule_notification_after_commit(task_id, event_id, task_data[notif_key])
             
             print(f"✅ Task created successfully: {task_id}")
             return task_id
@@ -312,10 +319,18 @@ class SimpleTaskManager:
                 'notif1','notif2','notif3','notif4','notif5','notif6','notif7','notif8'
             ]
             set_strs, params = [], []
+            
+            # Theo dõi các field notification có thay đổi
+            notification_fields_changed = []
             for f in allowed_fields:
                 if f in updates:
                     set_strs.append(f"{f} = ?")
                     params.append(updates[f])
+                    # Kiểm tra nếu là notification field
+                    if f in ['notification_time', 'notif1', 'notif2', 'notif3', 'notif4', 
+                            'notif5', 'notif6', 'notif7', 'notif8']:
+                        notification_fields_changed.append(f)
+            
             if not set_strs:
                 return False
 
@@ -324,6 +339,7 @@ class SimpleTaskManager:
             params.append(task_id)
 
             sql = f"UPDATE tasks SET {', '.join(set_strs)} WHERE task_id = ?"
+            
             with self.db.get_connection() as conn:
                 cur = conn.cursor()
                 cur.execute(sql, tuple(params))
@@ -331,6 +347,69 @@ class SimpleTaskManager:
                 if cur.rowcount <= 0:
                     print(f"⚠️ update_task: no rows affected for {task_id}")
                     return False
+                
+                # Nếu có thay đổi notification fields, cần update notifications
+                if notification_fields_changed:
+                    # Lấy event_id từ calendar_events
+                    event_row = conn.execute(
+                        "SELECT event_id FROM calendar_events WHERE task_id = ? LIMIT 1",
+                        (task_id,)
+                    ).fetchone()
+                    event_id = event_row[0] if event_row else f"event_{task_id}"
+                    
+                    # Xóa notifications pending cũ cho task này
+                    conn.execute("""
+                        DELETE FROM notifications 
+                        WHERE task_id = ? AND status = 'pending'
+                    """, (task_id,))
+                    deleted_count = cur.rowcount
+                    print(f"🗑️  Deleted {deleted_count} old pending notifications")
+                    
+                    # Lấy giá trị notification mới từ updates
+                    notification_times = []
+                    
+                    # notification_time chính
+                    if 'notification_time' in updates and updates['notification_time']:
+                        notification_times.append(('notification_time', updates['notification_time']))
+                    
+                    # notif1-8
+                    for i in range(1, 9):
+                        notif_key = f'notif{i}'
+                        if notif_key in updates and updates[notif_key]:
+                            notification_times.append((notif_key, updates[notif_key]))
+                    
+                    # Tạo notifications mới
+                    for notif_source, notif_time in notification_times:
+                        try:
+                            # Format thời gian
+                            if 'T' in notif_time:
+                                dt = datetime.strptime(notif_time, '%Y-%m-%dT%H:%M')
+                                formatted_time = dt.strftime('%Y-%m-%d %H:%M:%S')
+                            else:
+                                formatted_time = notif_time
+                            
+                            notification_id = f"notif_{task_id}_{notif_source}_{int(datetime.now().timestamp())}"
+                            
+                            conn.execute("""
+                                INSERT INTO notifications 
+                                (notification_id, task_id, event_id, notification_type, 
+                                scheduled_time, status, created_at)
+                                VALUES (?, ?, ?, ?, ?, ?, ?)
+                            """, (
+                                notification_id,
+                                task_id,
+                                event_id,
+                                'reminder',
+                                formatted_time,
+                                'pending',
+                                datetime.now().isoformat()
+                            ))
+                            print(f"✅ Created notification from {notif_source}: {formatted_time}")
+                        except Exception as e:
+                            print(f"⚠️  Error creating notification from {notif_source}: {e}")
+                    
+                    conn.commit()
+            
             print(f"✅ Task {task_id} updated: {updates}")
             return True
         except Exception as e:
