@@ -29,6 +29,14 @@ def run_all_migrations():
     if ret2.returncode != 0:
         raise SystemExit("Migration 002 failed")
 
+    # Step 3: Add notif columns
+    print("\n" + "=" * 60)
+    print("STEP 3: Adding notification columns (notif1..notif8)...")
+    print("=" * 60)
+    ret3 = subprocess.run([sys.executable, os.path.join(current_dir, "003_add_notif_columns.py")])
+    if ret3.returncode != 0:
+        raise SystemExit("Migration 003 failed")
+
     print("\n" + "=" * 60)
     print("✅ ALL MIGRATIONS COMPLETED SUCCESSFULLY!")
     print("=" * 60)
