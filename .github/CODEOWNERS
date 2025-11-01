@@ -1,0 +1,17 @@
+# .github/CODEOWNERS
+
+# Global - mọi file
+* @quanghai159
+
+# Backend code
+/src/** @quanghai159 @backend-team
+/api/** @quanghai159
+
+# Frontend code  
+/components/** @frontend-team
+/pages/** @frontend-team
+
+# Config files - chỉ admin mới review
+/.github/** @quanghai159
+/config/** @quanghai159
+package.json @quanghai159
