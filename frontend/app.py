@@ -175,7 +175,7 @@ def inject_perms():
 @app.route('/')
 def index():
     """Trang chủ"""
-    return render_template('index.html')
+    return render_template('index_adminlte.html')
 
 # Thêm routes authentication (thêm sau route '/' hoặc trước route '/create_simple_task')
 @app.route('/login', methods=['GET', 'POST'])

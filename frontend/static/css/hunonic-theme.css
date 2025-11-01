@@ -1,0 +1,336 @@
+/*
+ * Hunonic Marketing Tools - AdminLTE Theme Customization
+ * Primary Color: #01af32 (Hunonic Green)
+ * Secondary Color: #4ecb71 (Light Green)
+ */
+
+:root {
+    --hunonic-green: #01af32;
+    --hunonic-green-dark: #018a28;
+    --hunonic-green-light: #4ecb71;
+    --hunonic-orange: #ff6b35;
+    --hunonic-accent: #4ecdc4;
+}
+
+/* Navbar Customization */
+.hunonic-navbar {
+    border-bottom: 3px solid var(--hunonic-green) !important;
+}
+
+.hunonic-navbar .nav-link {
+    color: #333 !important;
+}
+
+.hunonic-navbar .nav-link:hover {
+    color: var(--hunonic-green) !important;
+}
+
+/* Sidebar Customization */
+.hunonic-sidebar {
+    background: linear-gradient(180deg, #1a1a1a 0%, #2d2d2d 100%) !important;
+}
+
+.hunonic-brand {
+    background: var(--hunonic-green) !important;
+    border-bottom: 1px solid var(--hunonic-green-dark) !important;
+    transition: all 0.3s ease;
+}
+
+.hunonic-brand:hover {
+    background: var(--hunonic-green-dark) !important;
+}
+
+.hunonic-brand .brand-text {
+    color: white !important;
+}
+
+/* Sidebar Menu */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active,
+.sidebar-dark-primary .nav-sidebar > .nav-item.menu-open > .nav-link {
+    background-color: var(--hunonic-green) !important;
+    color: #fff !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: rgba(1, 175, 50, 0.3) !important;
+    color: #fff !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link.active {
+    background-color: rgba(1, 175, 50, 0.5) !important;
+    color: #fff !important;
+}
+
+.sidebar-dark-primary .nav-treeview > .nav-item > .nav-link:hover {
+    background-color: rgba(1, 175, 50, 0.3) !important;
+    color: #fff !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--hunonic-green) !important;
+    border-color: var(--hunonic-green) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--hunonic-green-dark) !important;
+    border-color: var(--hunonic-green-dark) !important;
+}
+
+.btn-success {
+    background-color: var(--hunonic-green-light) !important;
+    border-color: var(--hunonic-green-light) !important;
+}
+
+.btn-outline-primary {
+    color: var(--hunonic-green) !important;
+    border-color: var(--hunonic-green) !important;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--hunonic-green) !important;
+    border-color: var(--hunonic-green) !important;
+    color: #fff !important;
+}
+
+/* Links */
+.hunonic-link {
+    color: var(--hunonic-green) !important;
+    text-decoration: none;
+}
+
+.hunonic-link:hover {
+    color: var(--hunonic-green-dark) !important;
+    text-decoration: underline;
+}
+
+/* Cards */
+.card-primary.card-outline {
+    border-top: 3px solid var(--hunonic-green) !important;
+}
+
+.card-success.card-outline {
+    border-top: 3px solid var(--hunonic-green-light) !important;
+}
+
+.card-header {
+    background-color: rgba(1, 175, 50, 0.1) !important;
+    border-bottom: 2px solid var(--hunonic-green) !important;
+}
+
+/* Info Boxes */
+.info-box-icon.bg-primary {
+    background-color: var(--hunonic-green) !important;
+}
+
+.info-box-icon.bg-success {
+    background-color: var(--hunonic-green-light) !important;
+}
+
+/* Small Boxes */
+.small-box.bg-primary {
+    background: linear-gradient(135deg, var(--hunonic-green), var(--hunonic-green-light)) !important;
+}
+
+.small-box.bg-success {
+    background: linear-gradient(135deg, var(--hunonic-green-light), #20c997) !important;
+}
+
+.small-box > .small-box-footer {
+    background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Badges */
+.badge-primary {
+    background-color: var(--hunonic-green) !important;
+}
+
+.badge-success {
+    background-color: var(--hunonic-green-light) !important;
+}
+
+/* Progress Bars */
+.progress-bar {
+    background-color: var(--hunonic-green) !important;
+}
+
+/* Alerts */
+.alert-success {
+    background-color: #d4edda !important;
+    border-color: var(--hunonic-green-light) !important;
+    color: var(--hunonic-green-dark) !important;
+}
+
+/* Tables */
+.table-hover tbody tr:hover {
+    background-color: rgba(1, 175, 50, 0.05) !important;
+}
+
+.table thead th {
+    background-color: rgba(1, 175, 50, 0.1) !important;
+    border-bottom: 2px solid var(--hunonic-green) !important;
+}
+
+/* Form Controls */
+.form-control:focus {
+    border-color: var(--hunonic-green) !important;
+    box-shadow: 0 0 0 0.2rem rgba(1, 175, 50, 0.25) !important;
+}
+
+.custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--hunonic-green) !important;
+    border-color: var(--hunonic-green) !important;
+}
+
+/* Pagination */
+.page-item.active .page-link {
+    background-color: var(--hunonic-green) !important;
+    border-color: var(--hunonic-green) !important;
+}
+
+.page-link {
+    color: var(--hunonic-green) !important;
+}
+
+.page-link:hover {
+    color: var(--hunonic-green-dark) !important;
+    background-color: rgba(1, 175, 50, 0.1) !important;
+}
+
+/* Dropdowns */
+.dropdown-item.active,
+.dropdown-item:active {
+    background-color: var(--hunonic-green) !important;
+}
+
+/* Nav Tabs */
+.nav-tabs .nav-link.active {
+    border-color: #dee2e6 #dee2e6 #fff !important;
+    border-top: 3px solid var(--hunonic-green) !important;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6 !important;
+}
+
+/* Footer */
+.main-footer {
+    background-color: #f8f9fa !important;
+    border-top: 3px solid var(--hunonic-green) !important;
+}
+
+/* Custom Utilities */
+.text-hunonic {
+    color: var(--hunonic-green) !important;
+}
+
+.bg-hunonic {
+    background-color: var(--hunonic-green) !important;
+    color: white !important;
+}
+
+.border-hunonic {
+    border-color: var(--hunonic-green) !important;
+}
+
+/* Loading Overlay */
+.overlay {
+    background-color: rgba(1, 175, 50, 0.1) !important;
+}
+
+/* Brand Colors for Status Badges */
+.badge-hunonic {
+    background-color: var(--hunonic-green) !important;
+    color: white;
+}
+
+.badge-hunonic-light {
+    background-color: var(--hunonic-green-light) !important;
+    color: white;
+}
+
+/* Sidebar Mini Mode */
+.sidebar-mini.sidebar-collapse .hunonic-brand .brand-text {
+    opacity: 0;
+}
+
+/* Custom Card Styles */
+.card-hunonic {
+    border-top: 3px solid var(--hunonic-green) !important;
+}
+
+.card-hunonic .card-header {
+    background: linear-gradient(135deg, var(--hunonic-green), var(--hunonic-green-light)) !important;
+    color: white !important;
+}
+
+/* Status Colors */
+.status-pending {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.status-completed {
+    background-color: #d4edda !important;
+    color: var(--hunonic-green-dark) !important;
+}
+
+.status-overdue {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+}
+
+/* Priority Colors */
+.priority-high {
+    background: linear-gradient(135deg, #ff6b35, #ff8c5a) !important;
+    color: white !important;
+}
+
+.priority-medium {
+    background: linear-gradient(135deg, #ffc107, #ffeb3b) !important;
+    color: #333 !important;
+}
+
+.priority-low {
+    background: linear-gradient(135deg, var(--hunonic-green), var(--hunonic-green-light)) !important;
+    color: white !important;
+}
+
+/* Direct Chat */
+.direct-chat-msg.right .direct-chat-text {
+    background-color: var(--hunonic-green) !important;
+    border-color: var(--hunonic-green) !important;
+}
+
+/* Timeline */
+.timeline > div > .timeline-item > .timeline-header {
+    background-color: var(--hunonic-green) !important;
+    color: white !important;
+}
+
+/* Custom Scrollbar */
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: var(--hunonic-green);
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: var(--hunonic-green-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .content-wrapper {
+        padding: 10px;
+    }
+}
