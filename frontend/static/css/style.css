@@ -629,24 +629,126 @@ body {
     background-color: #fff;
   }
 
-  /* Cố định cột 1 (STT) */
+/* FIX: Remove overflow: hidden từ table để sticky hoạt động */
+.task-table {
+    overflow: visible !important; /* QUAN TRỌNG: Phải là visible */
+    display: table; /* Đảm bảo table display */
+}
+
+/* Đảm bảo table không có overflow constraints */
+.table.task-table {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}  
+
+/* Cố định cột 1 (STT) */
 .sticky-col {
+    position: -webkit-sticky; /* Safari support */
     position: sticky;
     left: 0;
-    background: #fff;
-    z-index: 3;
-    min-width: 55px; /* Nên đặt width cụ thể */
-  }
-  
-  /* Cố định cột 2 (Tiêu đề) - Lưu ý left bằng đúng width cột 1 */
-  .sticky-col-2 {
+    background: #fff !important;
+    z-index: 100;
+    min-width: 55px;
+    width: 55px;
+    /* Đảm bảo che phủ hoàn toàn */
+    box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1); /* Shadow bên phải để phân cách */
+}
+
+/* Chỉ căn giữa cho cột STT (không có sticky-col-2) */
+.sticky-col:not(.sticky-col-2) {
+    text-align: center;
+}
+
+/* Background cho sticky-col trong header - DÙNG GRADIENT XANH LÁ */
+.task-table thead th.sticky-col {
+    background: linear-gradient(135deg, #01af32, #4ecb71) !important;
+    color: white !important;
+    z-index: 101; /* Cao hơn body cells */
+    /* Đảm bảo che phủ hoàn toàn */
+    box-shadow: 2px 0 4px -2px rgba(0,0,0,0.15);
+}
+
+/* Background cho sticky-col trong tbody - Match với row colors */
+.task-table tbody tr:nth-child(even) td.sticky-col {
+    background-color: #e3f2fd !important; /* Match với row màu chẵn */
+}
+
+.task-table tbody tr:nth-child(odd) td.sticky-col {
+    background-color: #ffffff !important; /* Match với row màu lẻ */
+}
+
+/* Cố định cột 2 (Tiêu đề) */
+.sticky-col-2 {
+    position: -webkit-sticky; /* Safari support */
     position: sticky;
-    left: 55px; /* đúng bằng min-width cột STT */
-    background: #fff;
-    z-index: 3;
-    min-width: 200px; /* width cột 2 */
-    box-shadow: 2px 0 2px -2px #8882;
-  }
+    left: 53px; /* Giảm 2px để overlap với border của sticky-col (55px - 2px border) */
+    background: #fff !important;
+    z-index: 99; /* Thấp hơn sticky-col một chút để border của sticky-col hiển thị */
+    min-width: 200px;
+    width: 200px;
+    /* Shadow để phân cách và che phủ */
+    box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1);
+    /* Border-left để che khe hở */
+    border-left: 2px solid transparent;
+    margin-left: -2px; /* Overlap với border của sticky-col */
+}
+
+/* Background cho sticky-col-2 trong tbody - Match với row colors */
+.task-table tbody tr:nth-child(even) td.sticky-col-2 {
+    background-color: #e3f2fd !important;
+    border-left-color: #e3f2fd; /* Match với background */
+}
+
+.task-table tbody tr:nth-child(odd) td.sticky-col-2 {
+    background-color: #ffffff !important;
+    border-left-color: #ffffff; /* Match với background */
+}
+
+/* Background cho sticky-col-2 trong header */
+.task-table thead th.sticky-col-2 {
+    border-left-color: transparent; /* Hoặc match với gradient */
+}
+
+/* Border-right cho sticky columns - CỐ ĐỊNH VÀ CHE PHỦ HOÀN TOÀN */
+.task-table th.sticky-col,
+.task-table td.sticky-col {
+    border-right: 2px solid rgba(0,0,0,0.15) !important;
+    /* Đảm bảo border có background che phủ */
+    background-clip: padding-box;
+}
+
+/* Border-left cho sticky-col-2 để che khe hở */
+.task-table th.sticky-col-2,
+.task-table td.sticky-col-2 {
+    border-left: 2px solid transparent; /* Không có border-left nhưng reserve space */
+    border-right: 2px solid rgba(0,0,0,0.15) !important;
+    /* Đảm bảo background che cả border */
+    background-clip: padding-box;
+    /* Đảm bảo left position chính xác không có gap */
+    margin-left: -2px; /* Offset để che border của sticky-col */
+}
+
+/* Đảm bảo không có margin/padding bên trái làm lộ */
+.task-table-wrapper {
+    overflow-x: auto;
+    padding-bottom: 16px;
+    overflow-y: visible;
+    width: 100%;
+    max-width: 100%;
+    /* Đảm bảo không có padding-left */
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
+
+/* Đảm bảo row không block sticky */
+.row {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    /* Không có padding-left */
+    padding-left: 0 !important;
+    margin-left: 0 !important;
+}
   
   .table th, .table td {
     white-space: nowrap;
@@ -680,4 +782,3 @@ body {
     color: #b5b5b5;
     opacity: 1;
   }
-

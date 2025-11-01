@@ -1,0 +1,344 @@
+/* ============================================
+   DATETIME PICKER STYLES
+   ============================================ */
+
+/* Wrapper cho datetime input - ĐẢM BẢO CHIỀU CAO ĐỒNG NHẤT */
+.datetime-input-wrapper {
+    position: relative;
+    min-height: 65px; /* Chiều cao cố định cho tất cả */
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.datetime-input-wrapper:hover {
+    border-color: #01af32;
+    box-shadow: 0 2px 4px rgba(1, 175, 50, 0.1);
+}
+
+/* Input datetime - chiều cao cố định */
+.datetime-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    font-size: 0.95em;
+    cursor: pointer;
+    outline: none;
+    min-height: 38px; /* Chiều cao tối thiểu */
+    box-sizing: border-box;
+}
+
+.datetime-input:focus {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.datetime-input::placeholder {
+    color: #adb5bd;
+}
+
+/* Ghi chú tham chiếu - luôn có không gian cố định */
+.datetime-reference-note {
+    margin-top: 6px;
+    padding: 4px 6px;
+    font-size: 0.75em;
+    line-height: 1.4;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-left: 2px solid #01af32;
+    padding-left: 8px;
+    border-radius: 0 4px 4px 0;
+    min-height: 20px; /* Đảm bảo có không gian ngay cả khi ẩn */
+    display: flex;
+    align-items: center;
+    transition: opacity 0.2s ease;
+}
+
+.datetime-reference-note[style*="display: none"] {
+    opacity: 0;
+    min-height: 0;
+    margin-top: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.datetime-reference-note:not([style*="display: none"]) {
+    opacity: 1;
+}
+
+.datetime-reference-note i {
+    font-size: 0.85em;
+    margin-right: 4px;
+    color: #01af32;
+}
+
+.datetime-reference-note .ref-offset {
+    color: #ff6b35;
+    font-weight: 500;
+}
+
+/* Popup overlay */
+.datetime-popup {
+    position: fixed !important; /* Đổi từ absolute sang fixed */
+    z-index: 99999 !important; /* Tăng z-index lên cao nhất */
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    min-width: 320px;
+    max-width: 400px;
+}
+
+.datetime-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.popup-title {
+    font-weight: 600;
+    color: #495057;
+    font-size: 0.95em;
+}
+
+.btn-close-popup {
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 1.1em;
+    transition: color 0.2s;
+}
+
+.btn-close-popup:hover {
+    color: #dc3545;
+}
+
+.datetime-popup-calendar {
+    padding: 15px;
+}
+
+.datetime-popup-input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.datetime-popup-quick {
+    padding: 15px;
+    border-top: 1px solid #dee2e6;
+}
+
+.quick-label {
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 10px;
+}
+
+.quick-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 15px;
+}
+
+.quick-btn {
+    padding: 6px 12px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.85em;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.quick-btn:hover {
+    background: #01af32;
+    color: white;
+    border-color: #01af32;
+}
+
+.quick-custom {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.custom-amount {
+    width: 60px;
+    padding: 6px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.custom-unit {
+    padding: 6px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    min-width: 100px;
+    background-color: white;
+}
+
+.btn-apply-custom {
+    padding: 6px 15px;
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85em;
+    white-space: nowrap;
+}
+
+.btn-apply-custom:hover {
+    background: #e55a2b;
+}
+
+/* Backdrop overlay */
+.datetime-popup-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1040;
+    background: rgba(0,0,0,0.1);
+}
+
+/* CRITICAL FIX: Remove overflow từ table để sticky hoạt động */
+.task-table {
+    overflow: visible !important;
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+    display: table !important;
+}
+
+/* Table improvements */
+
+/* Table improvements */
+.task-table tbody tr {
+    min-height: 80px;
+    height: auto;
+}
+
+.task-table td {
+    padding: 12px 8px;
+    vertical-align: middle;
+}
+
+.task-table thead th {
+    padding: 14px 8px;
+    font-weight: 600;
+    background: linear-gradient(135deg, #01af32, #4ecb71); /* Đổi thành gradient xanh lá */
+    color: white; /* Thêm màu chữ trắng */
+    border-bottom: 2px solid rgba(255,255,255,0.3); /* Border nhẹ hơn */
+}
+
+.task-table td[contenteditable="true"] {
+    padding: 10px 8px;
+    min-height: 60px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    vertical-align: middle; /* Đảm bảo căn giữa */
+    display: table-cell; /* Đảm bảo vertical-align hoạt động */
+}
+
+.task-table td[contenteditable="true"]:hover {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+.task-table td[contenteditable="true"]:focus {
+    background-color: #ffffff;
+    border-color: #01af32;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(1, 175, 50, 0.1);
+}
+
+.task-table select {
+    padding: 8px 10px;
+    min-height: 38px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    width: 100%;
+    background-color: #ffffff;
+    font-size: 0.95em;
+}
+
+.task-table select:focus {
+    border-color: #01af32;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(1, 175, 50, 0.1);
+}
+
+/* Căn giữa cột STT (chỉ cột STT, không phải cột Tiêu đề) */
+.task-table th.sticky-col:not(.sticky-col-2),
+.task-table td.sticky-col:not(.sticky-col-2) {
+    text-align: center;
+}
+
+/* Đảm bảo cột Tiêu đề căn trái */
+.task-table th.sticky-col-2,
+.task-table td.sticky-col-2 {
+    text-align: left;
+}
+
+/* Save All Button - Ở cuối bảng thay vì FAB */
+.save-all-fab {
+    position: relative; /* Đổi từ fixed sang relative */
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    padding: 10px 24px; /* Giảm padding */
+    background: linear-gradient(135deg, #01af32, #018a28);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    width: auto; /* Đổi từ 100% sang auto */
+    min-width: 200px; /* Chiều ngang tối thiểu */
+    justify-content: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.save-all-fab:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.save-all-fab:active {
+    transform: translateY(0);
+}
+
+/* Duplicate button */
+.btn-outline-info {
+    border-color: #17a2b8;
+    color: #17a2b8;
+}
+
+.btn-outline-info:hover {
+    background: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+}

@@ -496,13 +496,79 @@ def view_tasks():
         settings_mgr = UserSettingsManager(app.config.get("DB_PATH","database/calendar_tools.db"))
         notif_labels = []
         for i in range(1,9):
-            notif_labels.append(settings_mgr.get_setting(user_id, f'notif_label_{i}', tool_id=None, default=f'Thông báo {i}') or f'Thông báo {i}')  # Lấy user_id từ session
-        tasks = task_manager.get_tasks(user_id=user_id)  # Filter theo user
-        return render_template('tasks_list.html', tasks=tasks, notif_labels=notif_labels)
+            notif_labels.append(settings_mgr.get_setting(user_id, f'notif_label_{i}', tool_id=None, default=f'Thông báo {i}') or f'Thông báo {i}')
+        
+        tasks = task_manager.get_tasks(user_id=user_id)
+        
+        # Load offsets cho tất cả tasks
+        task_ids = [task['task_id'] for task in tasks]
+        print(f"🔍 DEBUG view_tasks:")
+        print(f"  - Found {len(tasks)} tasks")
+        print(f"  - Task IDs: {[t[:8] + '...' for t in task_ids[:5]]}...")
+        
+        task_offsets = load_task_offsets(task_ids)
+        
+        print(f"  - Loaded offsets for {len(task_offsets)} tasks")
+        for task_id, offsets in list(task_offsets.items())[:3]:
+            print(f"    - {task_id[:8]}...: {list(offsets.keys())}")
+        
+        return render_template('tasks_list.html', 
+                             tasks=tasks, 
+                             notif_labels=notif_labels,
+                             task_offsets=task_offsets)
     except Exception as e:
         print(f"❌ Error getting tasks: {e}")
+        import traceback
+        traceback.print_exc()
         flash(f'Lỗi lấy danh sách tasks: {str(e)}', 'error')
-        return render_template('tasks_list.html', tasks=[],notif_labels=notif_labels)
+        return render_template('tasks_list.html', tasks=[], notif_labels=[], task_offsets={})
+
+def load_task_offsets(task_ids):
+    """Load offsets từ database"""
+    import sqlite3
+    
+    if not task_ids:
+        return {}
+    
+    db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
+    offsets_map = {}
+    
+    print(f"🔍 DEBUG load_task_offsets:")
+    print(f"  - Querying {len(task_ids)} task IDs")
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            conn.row_factory = sqlite3.Row
+            placeholders = ','.join(['?'] * len(task_ids))
+            query = f"""
+                SELECT task_id, column_name, offset_value
+                FROM task_datetime_offsets
+                WHERE task_id IN ({placeholders})
+            """
+            rows = conn.execute(query, task_ids).fetchall()
+            
+            print(f"  - Found {len(rows)} offset records")
+            
+            for row in rows:
+                task_id = row['task_id']
+                column_name = row['column_name']
+                offset_value = row['offset_value']
+                
+                if task_id not in offsets_map:
+                    offsets_map[task_id] = {}
+                offsets_map[task_id][column_name] = offset_value
+                
+                print(f"  - Task {task_id[:8]}... | {column_name}: {offset_value}")
+            
+            print(f"✅ Loaded offsets for {len(offsets_map)} tasks")
+    except Exception as e:
+        # Bảng chưa tồn tại là OK
+        if 'no such table' not in str(e).lower():
+            print(f"⚠️ Error loading offsets: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    return offsets_map
 
 @app.route('/task/<task_id>')
 def view_task_detail(task_id):
@@ -703,27 +769,159 @@ def test_notification(task_id):
     return redirect(url_for('view_tasks'))
 
 @app.route('/api/task', methods=['POST'])
-def api_create_task():
+@app.route('/api/task/<task_id>', methods=['POST'])
+@require_login
+def api_task(task_id=None):
+    """API để tạo/cập nhật task"""
     try:
-        data = request.get_json() or {}
-        task_id = task_manager.create_task({
-            'title': data.get('title','').strip(),
-            'description': data.get('description',''),
-            'start_date': data.get('start_date',''),
-            'end_date': data.get('end_date',''),
-            'deadline': data.get('deadline',''),
-            'notification_time': data.get('notification_time',''),
-            'notif1': data.get('notif1',''), 'notif2': data.get('notif2',''),
-            'notif3': data.get('notif3',''), 'notif4': data.get('notif4',''),
-            'notif5': data.get('notif5',''), 'notif6': data.get('notif6',''),
-            'notif7': data.get('notif7',''), 'notif8': data.get('notif8',''),
-            'user_id': session.get('user_id'),
-            'category': 'general',
-            'priority': 'medium'
-        })
-        return jsonify(status='success', message='Tạo tác vụ thành công!', task_id=task_id)
+        user_id = session.get('user_id')
+        data = request.get_json()
+        
+        print(f"🔍 DEBUG api_task:")
+        print(f"  - task_id: {task_id}")
+        print(f"  - user_id: {user_id}")
+        print(f"  - data keys: {list(data.keys()) if data else 'None'}")
+        
+        # Extract offsets từ payload
+        offsets = data.get('offsets', {})
+        print(f"  - offsets: {offsets}")
+        
+        # Tạo/update task (giữ nguyên logic cũ)
+        task_data = {
+            'title': data.get('title'),
+            'description': data.get('description'),
+            'start_date': data.get('start_date'),
+            'end_date': data.get('end_date'),
+            'deadline': data.get('deadline'),
+            'notification_time': data.get('notification_time'),
+            'notif1': data.get('notif1'),
+            'notif2': data.get('notif2'),
+            'notif3': data.get('notif3'),
+            'notif4': data.get('notif4'),
+            'notif5': data.get('notif5'),
+            'notif6': data.get('notif6'),
+            'notif7': data.get('notif7'),
+            'notif8': data.get('notif8'),
+            'status': data.get('status', 'pending')
+        }
+        
+        if task_id:
+            # Update
+            print(f"  - Updating task {task_id}")
+            try:
+                success = task_manager.update_task(task_id, task_data)  # ✅ SỬA Ở ĐÂY
+                result_task_id = task_id
+                print(f"  - Update result: {success}")
+            except Exception as e:
+                print(f"  ❌ Error updating task: {e}")
+                import traceback
+                traceback.print_exc()
+                raise
+        else:
+            # Create
+            print(f"  - Creating new task")
+            try:
+                # Thêm user_id vào task_data
+                task_data['user_id'] = user_id
+                result_task_id = task_manager.create_task(task_data)  # ✅ SỬA Ở ĐÂY
+                success = bool(result_task_id)
+                print(f"  - Create result: task_id={result_task_id}, success={success}")
+            except Exception as e:
+                print(f"  ❌ Error creating task: {e}")
+                import traceback
+                traceback.print_exc()
+                raise
+        
+        # Lưu offsets vào database (KHÔNG raise exception nếu fail)
+        if success and offsets:
+            print(f"  - Saving offsets: {offsets}")
+            try:
+                save_task_offsets(result_task_id, offsets)
+            except Exception as e:
+                print(f"  ⚠️ Error saving offsets (non-critical): {e}")
+                import traceback
+                traceback.print_exc()
+                # KHÔNG raise - chỉ log lỗi
+        
+        if success:
+            return jsonify({
+                'status': 'success',
+                'message': 'Lưu thành công!',
+                'task_id': result_task_id
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Lưu không thành công'
+            }), 400
+            
     except Exception as e:
-        return jsonify(status='error', message=str(e)), 400
+        print(f"❌ Error in api_task: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+def save_task_offsets(task_id, offsets):
+    """Lưu offsets vào database"""
+    import sqlite3
+    
+    db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
+    
+    print(f"🔍 DEBUG save_task_offsets:")
+    print(f"  - task_id: {task_id}")
+    print(f"  - offsets: {offsets}")
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            # Kiểm tra task_id có tồn tại không
+            cursor = conn.execute("SELECT task_id FROM tasks WHERE task_id = ?", (task_id,))
+            if not cursor.fetchone():
+                print(f"  ⚠️ Task {task_id} does not exist, skipping offset save")
+                return
+            
+            # Tạo bảng nếu chưa có (không có FOREIGN KEY để tránh lỗi)
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS task_datetime_offsets (
+                    task_id TEXT NOT NULL,
+                    column_name TEXT NOT NULL,
+                    offset_value TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (task_id, column_name)
+                )
+            """)
+            
+            # Xóa offsets cũ
+            conn.execute("DELETE FROM task_datetime_offsets WHERE task_id = ?", (task_id,))
+            print(f"  - Deleted old offsets for task {task_id}")
+            
+            # Lưu offsets mới
+            if offsets:
+                saved_count = 0
+                for column_name, offset_value in offsets.items():
+                    if offset_value:  # Chỉ lưu nếu có giá trị
+                        try:
+                            conn.execute("""
+                                INSERT OR REPLACE INTO task_datetime_offsets (task_id, column_name, offset_value)
+                                VALUES (?, ?, ?)
+                            """, (task_id, column_name, offset_value))
+                            saved_count += 1
+                            print(f"  - Saved offset: {column_name} = {offset_value}")
+                        except Exception as e:
+                            print(f"  ⚠️ Error saving offset {column_name}: {e}")
+                            continue
+                
+                conn.commit()
+                print(f"✅ Saved {saved_count} offsets for task {task_id}")
+            else:
+                print(f"⚠️ No offsets to save for task {task_id}")
+    except Exception as e:
+        print(f"⚠️ Error saving offsets: {e}")
+        import traceback
+        traceback.print_exc()
+        # KHÔNG raise exception để không làm fail API call
 
 @app.route('/api/task/<task_id>/test_notification', methods=['POST'])
 def api_test_notification(task_id):

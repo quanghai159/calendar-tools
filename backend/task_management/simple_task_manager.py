@@ -272,7 +272,7 @@ class SimpleTaskManager:
                 else:
                     where_clause = ""
                 
-                query = f"SELECT * FROM tasks{where_clause} ORDER BY created_at DESC LIMIT ?"
+                query = f"SELECT * FROM tasks{where_clause} ORDER BY created_at ASC LIMIT ?"
                 params.append(limit)
                 
                 results = self.db.execute_query(conn, query, tuple(params))
