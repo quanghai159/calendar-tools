@@ -427,4 +427,44 @@
     }
     </script>
 
+{% block extra_js %}
+<script>
+// Track changes trong inline edit form
+let rowChanged = false;
+
+// Track khi user edit trong table
+document.addEventListener('DOMContentLoaded', function() {
+    const editableInputs = document.querySelectorAll('input[type="text"], input[type="datetime-local"], textarea, select');
+    editableInputs.forEach(function(input) {
+        input.addEventListener('change', function() {
+            rowChanged = true;
+        });
+        
+        input.addEventListener('input', function() {
+            rowChanged = true;
+        });
+    });
+    
+    // Reset khi save
+    const saveButtons = document.querySelectorAll('button[onclick*="saveRow"]');
+    saveButtons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            setTimeout(function() {
+                rowChanged = false;
+            }, 100);
+        });
+    });
+    
+    // Warning khi refresh/back
+    window.addEventListener('beforeunload', function(e) {
+        if (rowChanged) {
+            e.preventDefault();
+            e.returnValue = 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?';
+            return e.returnValue;
+        }
+    });
+});
+</script>
+{% endblock %}
+
 {% endblock %}

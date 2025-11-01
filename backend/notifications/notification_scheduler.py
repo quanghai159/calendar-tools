@@ -354,33 +354,54 @@ class NotificationScheduler:
             if notification_id and '_' in notification_id:
                 parts = notification_id.split('_')
                 if len(parts) >= 4:
-                    # Format mới: notif_task_xxx_notif1_timestamp -> parts[3] = 'notif1'
-                    notif_source = parts[3]
+                    # Format mới: notif_task_xxx_notif1_timestamp hoặc notif_task_xxx_notification_time_timestamp
+                    # parts[3] có thể là 'notif1', 'notif2', ... hoặc 'notification'
+                    potential_source = parts[3]
+                    
+                    # Nếu là 'notification', kiểm tra parts[4] có phải 'time' không
+                    if potential_source == 'notification' and len(parts) >= 5 and parts[4] == 'time':
+                        notif_source = 'notification_time'
+                    elif potential_source.startswith('notif') and len(potential_source) > 5:
+                        # notif1, notif2, ..., notif8
+                        notif_source = potential_source
+                    else:
+                        # Không phải notification_time, có thể là notif1-8 hoặc format khác
+                        notif_source = potential_source
                 elif len(parts) >= 3:
                     # Format cũ: notif_task_xxx_timestamp -> không có notif_source, dùng default
                     notif_source = 'notification_time'
-            
+
             # Lấy label từ user settings
             notif_label = 'Thông báo'  # Default
             if user_id:
                 try:
                     settings_mgr = UserSettingsManager(self.db.db_path)
-                    if notif_source.startswith('notif'):
-                        # notif1 -> notif_label_1
-                        notif_num = notif_source.replace('notif', '')
-                        label_key = f'notif_label_{notif_num}'
-                        notif_label = settings_mgr.get_setting(
-                            user_id, label_key, tool_id=None, 
-                            default=f'Thông báo {notif_num}'
-                        ) or f'Thông báo {notif_num}'
-                    else:
+                    if notif_source == 'notification_time':
                         # notification_time -> dùng label mặc định hoặc lấy từ setting
                         notif_label = settings_mgr.get_setting(
                             user_id, 'notification_time_label', tool_id=None,
                             default='Thông báo chính'
                         ) or 'Thông báo chính'
+                    elif notif_source.startswith('notif') and len(notif_source) <= 6:
+                        # notif1, notif2, ..., notif8
+                        notif_num = notif_source.replace('notif', '')
+                        # Kiểm tra notif_num là số hợp lệ (1-8)
+                        if notif_num.isdigit() and 1 <= int(notif_num) <= 8:
+                            label_key = f'notif_label_{notif_num}'
+                            notif_label = settings_mgr.get_setting(
+                                user_id, label_key, tool_id=None, 
+                                default=f'Thông báo {notif_num}'
+                            ) or f'Thông báo {notif_num}'
+                        else:
+                            # Không phải số hợp lệ, dùng default
+                            notif_label = 'Thông báo'
+                    else:
+                        # Trường hợp khác, dùng default
+                        notif_label = 'Thông báo'
                 except Exception as e:
                     print(f"⚠️  Error getting notif label: {e}")
+                    import traceback
+                    traceback.print_exc()
             
             # Format scheduled_time (thời điểm gửi thông báo): "2025-10-31 12:12:00" -> "31/10/2025 - 12:12"
             formatted_time = 'N/A'

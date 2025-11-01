@@ -201,6 +201,60 @@
             });
         }, 5000);
 
+        // Form unsaved changes warning
+        (function() {
+            'use strict';
+            let formChanged = false;
+            let formSubmitted = false;
+            
+            // Track form changes
+            function trackFormChanges() {
+                const forms = document.querySelectorAll('form');
+                forms.forEach(function(form) {
+                    // Lưu giá trị ban đầu của form
+                    const initialValues = {};
+                    const inputs = form.querySelectorAll('input, textarea, select');
+                    inputs.forEach(function(input) {
+                        if (input.type !== 'submit' && input.type !== 'button') {
+                            initialValues[input.name || input.id] = input.value;
+                        }
+                    });
+                    
+                    // Track changes
+                    form.addEventListener('change', function() {
+                        formChanged = true;
+                    });
+                    
+                    form.addEventListener('input', function() {
+                        formChanged = true;
+                    });
+                    
+                    // Reset flag khi submit
+                    form.addEventListener('submit', function() {
+                        formSubmitted = true;
+                        formChanged = false;
+                    });
+                });
+            }
+            
+            // Warning khi refresh/back/navigate
+            window.addEventListener('beforeunload', function(e) {
+                if (formChanged && !formSubmitted) {
+                    // Standard way
+                    e.preventDefault();
+                    // Chrome requires returnValue
+                    e.returnValue = 'Bạn có thay đổi chưa được lưu. Bạn có chắc chắn muốn rời khỏi trang này?';
+                    // Some browsers require return
+                    return e.returnValue;
+                }
+            });
+            
+            // Initialize khi page load
+            window.addEventListener('load', function() {
+                trackFormChanges();
+            });
+        })();
+
         // Form validation
         (function() {
             'use strict';
