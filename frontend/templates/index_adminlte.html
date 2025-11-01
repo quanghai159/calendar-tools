@@ -1,0 +1,298 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Dashboard - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Dashboard</li>
+{% endblock %}
+
+{% block content %}
+<!-- Welcome Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-body">
+                <h2 class="mb-3">
+                    <i class="fas fa-rocket text-hunonic mr-2"></i>
+                    Chào mừng đến với Hunonic Marketing Tools
+                </h2>
+                <p class="lead mb-2">Bộ công cụ Marketing toàn diện dành cho Đại lý & NPP Hunonic</p>
+                <p class="text-muted">Tự động hóa quy trình marketing, quản lý lịch làm việc, tạo banner động và nhiều hơn nữa</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>2+</h3>
+                <p>Công cụ hiện có</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <a href="#tools" class="small-box-footer">
+                Xem thêm <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>5+</h3>
+                <p>Công cụ sắp ra mắt</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <a href="#tools" class="small-box-footer">
+                Xem thêm <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>100+</h3>
+                <p>Đại lý sử dụng</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <a href="#about" class="small-box-footer">
+                Xem thêm <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>99%</h3>
+                <p>Uptime</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <a href="#about" class="small-box-footer">
+                Xem thêm <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tools Section -->
+<div class="row" id="tools">
+    <div class="col-12">
+        <h3 class="mb-3">
+            <i class="fas fa-tools text-hunonic mr-2"></i>
+            Bộ Công Cụ Marketing
+        </h3>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Calendar Tools -->
+    <div class="col-lg-6">
+        <div class="card card-hunonic h-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    Calendar Tools
+                </h3>
+                <div class="card-tools">
+                    <span class="badge badge-light">Đang hoạt động</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Quản lý lịch làm việc thông minh với thông báo tự động qua Telegram,
+                    Email và Zalo. Tích hợp Google Sheets, tạo báo cáo chi tiết.
+                </p>
+                <div class="mb-3">
+                    <span class="badge badge-hunonic mr-1">Thông báo tự động</span>
+                    <span class="badge badge-hunonic mr-1">Tích hợp Google Sheets</span>
+                    <span class="badge badge-hunonic mr-1">Báo cáo chi tiết</span>
+                    <span class="badge badge-hunonic">Multi-platform</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('calendar_tools_home') }}" class="btn btn-primary">
+                    <i class="fas fa-play mr-1"></i> Sử dụng ngay
+                </a>
+                <a href="{{ url_for('view_tasks') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-eye mr-1"></i> Xem demo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Banner Automation -->
+    <div class="col-lg-6">
+        <div class="card card-hunonic h-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-image mr-2"></i>
+                    Banner Automation
+                </h3>
+                <div class="card-tools">
+                    <span class="badge badge-light">Đang hoạt động</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Tự động tạo banner marketing với template có sẵn,
+                    tùy chỉnh nội dung, màu sắc và xuất file chất lượng cao.
+                </p>
+                <div class="mb-3">
+                    <span class="badge badge-hunonic mr-1">Template có sẵn</span>
+                    <span class="badge badge-hunonic mr-1">Tùy chỉnh linh hoạt</span>
+                    <span class="badge badge-hunonic mr-1">Xuất file HD</span>
+                    <span class="badge badge-hunonic">Batch processing</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="https://github.com/quanghai159/hunonic-banner-tools" class="btn btn-primary" target="_blank">
+                    <i class="fas fa-external-link-alt mr-1"></i> Truy cập tool
+                </a>
+                <button class="btn btn-outline-primary" disabled>
+                    <i class="fas fa-eye mr-1"></i> Demo sắp có
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Coming Soon Tools -->
+<div class="row mt-4">
+    <div class="col-lg-6">
+        <div class="card card-outline card-warning h-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-line mr-2"></i>
+                    Analytics Dashboard
+                </h3>
+                <div class="card-tools">
+                    <span class="badge badge-warning">Sắp ra mắt</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Dashboard phân tích dữ liệu marketing, theo dõi hiệu quả chiến dịch,
+                    báo cáo real-time và insights thông minh.
+                </p>
+                <div class="mb-3">
+                    <span class="badge badge-secondary mr-1">Real-time analytics</span>
+                    <span class="badge badge-secondary mr-1">Custom dashboard</span>
+                    <span class="badge badge-secondary mr-1">AI insights</span>
+                    <span class="badge badge-secondary">Export reports</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-clock mr-1"></i> Sắp ra mắt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card card-outline card-warning h-100">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-envelope mr-2"></i>
+                    Email Marketing
+                </h3>
+                <div class="card-tools">
+                    <span class="badge badge-warning">Sắp ra mắt</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    Công cụ gửi email marketing hàng loạt, template chuyên nghiệp,
+                    phân đoạn khách hàng và theo dõi hiệu quả.
+                </p>
+                <div class="mb-3">
+                    <span class="badge badge-secondary mr-1">Bulk email</span>
+                    <span class="badge badge-secondary mr-1">Template editor</span>
+                    <span class="badge badge-secondary mr-1">Customer segmentation</span>
+                    <span class="badge badge-secondary">Open tracking</span>
+                </div>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-clock mr-1"></i> Sắp ra mắt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+<div class="row mt-4" id="about">
+    <div class="col-lg-6">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Tại sao chọn Hunonic Marketing Tools?
+                </h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-hunonic mr-2"></i>
+                        Được thiết kế riêng cho Đại lý & NPP Hunonic
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-hunonic mr-2"></i>
+                        Tích hợp liền mạch với hệ sinh thái Hunonic
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-hunonic mr-2"></i>
+                        Giao diện thân thiện, dễ sử dụng
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-hunonic mr-2"></i>
+                        Hỗ trợ 24/7 từ đội ngũ kỹ thuật
+                    </li>
+                    <li class="mb-2">
+                        <i class="fas fa-check-circle text-hunonic mr-2"></i>
+                        Cập nhật thường xuyên với tính năng mới
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card bg-hunonic">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-rocket mr-2"></i>
+                    Bắt đầu sử dụng ngay hôm nay!
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-4">
+                    Tham gia cùng hàng trăm Đại lý & NPP Hunonic đang sử dụng bộ công cụ marketing hiệu quả
+                </p>
+                <a href="{{ url_for('create_simple_task') }}" class="btn btn-light btn-block mb-2">
+                    <i class="fas fa-rocket mr-2"></i>Bắt đầu với Calendar Tools
+                </a>
+                <a href="https://github.com/quanghai159/hunonic-banner-tools" class="btn btn-outline-light btn-block" target="_blank">
+                    <i class="fas fa-image mr-2"></i>Thử Banner Automation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

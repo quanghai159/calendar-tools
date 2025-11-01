@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Hunonic Marketing Tools{% endblock %}</title>
+
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <!-- Hunonic Custom Theme -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/hunonic-theme.css') }}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light hunonic-navbar">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="{{ url_for('index') }}" class="nav-link">Trang chủ</a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            <!-- Notifications Dropdown Menu -->
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-bell"></i>
+                    <span class="badge badge-warning navbar-badge">0</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <span class="dropdown-item dropdown-header">Không có thông báo mới</span>
+                </div>
+            </li>
+
+            <!-- User Dropdown Menu -->
+            {% if session.user_id %}
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-toggle="dropdown" href="#">
+                    <i class="far fa-user"></i>
+                    <span class="d-none d-md-inline ml-1">{{ session.user_email }}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
+                    <a href="{{ url_for('profile_settings') }}" class="dropdown-item">
+                        <i class="fas fa-user-cog mr-2"></i> Cấu hình cá nhân
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                    </a>
+                </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a href="{{ url_for('login') }}" class="nav-link">
+                    <i class="fas fa-sign-in-alt mr-1"></i> Đăng nhập
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="nav-item">
+                <a class="nav-link" data-widget="fullscreen" href="#" role="button">
+                    <i class="fas fa-expand-arrows-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+    <!-- /.navbar -->
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4 hunonic-sidebar">
+        <!-- Brand Logo -->
+        <a href="{{ url_for('index') }}" class="brand-link hunonic-brand">
+            <i class="fas fa-rocket brand-image ml-3" style="font-size: 1.8rem;"></i>
+            <span class="brand-text font-weight-light">Hunonic Tools</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+
+                    <!-- Dashboard -->
+                    <li class="nav-item">
+                        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+
+                    <!-- Task Management -->
+                    <li class="nav-item {% if request.endpoint in ['view_tasks', 'create_simple_task', 'report_tasks', 'calendar_tools_home'] %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if request.endpoint in ['view_tasks', 'create_simple_task', 'report_tasks', 'calendar_tools_home'] %}active{% endif %}">
+                            <i class="nav-icon fas fa-tasks"></i>
+                            <p>
+                                Quản lý Task
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ url_for('calendar_tools_home') }}" class="nav-link {% if request.endpoint == 'calendar_tools_home' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Calendar Tools</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('view_tasks') }}" class="nav-link {% if request.endpoint == 'view_tasks' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Danh sách Task</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('create_simple_task') }}" class="nav-link {% if request.endpoint == 'create_simple_task' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Tạo Task mới</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('report_tasks') }}" class="nav-link {% if request.endpoint == 'report_tasks' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Báo cáo</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <!-- CRM (Coming Soon) -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="alert('Tính năng đang phát triển'); return false;">
+                            <i class="nav-icon fas fa-users"></i>
+                            <p>
+                                CRM
+                                <span class="right badge badge-warning">Soon</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    <!-- Projects (Coming Soon) -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="alert('Tính năng đang phát triển'); return false;">
+                            <i class="nav-icon fas fa-project-diagram"></i>
+                            <p>
+                                Dự án
+                                <span class="right badge badge-warning">Soon</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    <li class="nav-header">CÔNG CỤ KHÁC</li>
+
+                    <!-- Banner Tools -->
+                    <li class="nav-item">
+                        <a href="https://github.com/quanghai159/hunonic-banner-tools" target="_blank" class="nav-link">
+                            <i class="nav-icon fas fa-image"></i>
+                            <p>
+                                Banner Tools
+                                <i class="fas fa-external-link-alt right"></i>
+                            </p>
+                        </a>
+                    </li>
+
+                    <!-- Analytics (Coming Soon) -->
+                    <li class="nav-item">
+                        <a href="#" class="nav-link" onclick="alert('Tính năng đang phát triển'); return false;">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>
+                                Analytics
+                                <span class="right badge badge-info">Soon</span>
+                            </p>
+                        </a>
+                    </li>
+
+                    {% if is_admin() %}
+                    <li class="nav-header">QUẢN TRỊ</li>
+
+                    <!-- Admin -->
+                    <li class="nav-item {% if request.endpoint in ['admin_list_users', 'admin_list_groups'] %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if request.endpoint in ['admin_list_users', 'admin_list_groups'] %}active{% endif %}">
+                            <i class="nav-icon fas fa-shield-alt"></i>
+                            <p>
+                                Quản trị
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ url_for('admin_list_users') }}" class="nav-link {% if request.endpoint == 'admin_list_users' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Quản lý User</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('admin_list_groups') }}" class="nav-link {% if request.endpoint == 'admin_list_groups' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Quản lý Nhóm</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    {% endif %}
+
+                </ul>
+            </nav>
+            <!-- /.sidebar-menu -->
+        </div>
+        <!-- /.sidebar -->
+    </aside>
+
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+        <!-- Content Header (Page header) -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">{% block page_title %}Dashboard{% endblock %}</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            {% block breadcrumb %}
+                            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+                            <li class="breadcrumb-item active">Dashboard</li>
+                            {% endblock %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- /.content-header -->
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Flash Messages -->
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' if category == 'success' else 'info-circle' }} mr-2"></i>
+                                {{ message }}
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+
+            </div>
+        </section>
+        <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2025 <a href="{{ url_for('index') }}" class="hunonic-link">Hunonic Team</a>.</strong>
+        Phát triển bởi Hunonic Marketing Tools.
+        <div class="float-right d-none d-sm-inline-block">
+            <b>Version</b> 2.0.0
+        </div>
+    </footer>
+
+</div>
+<!-- ./wrapper -->
+
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+
+<!-- Custom Scripts -->
+<script>
+    // Auto-hide alerts after 5 seconds
+    setTimeout(function() {
+        $('.alert').each(function() {
+            $(this).alert('close');
+        });
+    }, 5000);
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
