@@ -13,6 +13,8 @@
 (function() {
     'use strict';
 
+    'use strict';
+
     // ============================================================
     // DEBUG CONFIGURATION
     // ============================================================
@@ -67,7 +69,7 @@
      */
     function debugLog(category, ...args) {
         if (DEBUG_ENABLED && DEBUG_CATEGORIES[category.toUpperCase()]) {
-            console.log(...args);  // ✅ Phải dùng console.log
+            console.log(...args);
         }
     }
 
@@ -125,9 +127,9 @@ const COLUMN_ORDER = [
  * Initialize tất cả datetime inputs khi page load
  */
 function initializeDateTimePickers() {
-    debugLog('init', '🔍 DEBUG initializeDateTimePickers: START');
+    console.log('🔍 DEBUG initializeDateTimePickers: START');
     const datetimeInputs = document.querySelectorAll('.datetime-input');
-    debugLog('init', `  - Found ${datetimeInputs.length} datetime inputs`);
+    console.log(`  - Found ${datetimeInputs.length} datetime inputs`);
     
     if (datetimeInputs.length === 0) {
         console.warn('⚠️ No datetime inputs found!');
@@ -135,7 +137,7 @@ function initializeDateTimePickers() {
     }
     
     datetimeInputs.forEach(function(input, index) {
-        debugLog('init', `  - Processing input ${index + 1}:`, {
+        console.log(`  - Processing input ${index + 1}:`, {
             element: input,
             value: input.value,
             readonly: input.hasAttribute('readonly'),
@@ -146,67 +148,67 @@ function initializeDateTimePickers() {
         // Tạo popup nếu chưa có
         const wrapper = input.closest('.datetime-input-wrapper');
         if (!wrapper) {
-            debugError(`  ❌ Input ${index + 1} has no wrapper!`);
+            console.error(`  ❌ Input ${index + 1} has no wrapper!`);
             return;
         }
         
         if (!wrapper.querySelector('.datetime-popup')) {
-            debugLog('init', `  - Creating popup for input ${index + 1}...`);
+            console.log(`  - Creating popup for input ${index + 1}...`);
             createPopupForInput(input);
         } else {
-            debugLog('init', `  - Input ${index + 1} already has popup`);
+            console.log(`  - Input ${index + 1} already has popup`);
         }
         
         // Setup event listeners
-        debugLog('init', `  - Setting up events for input ${index + 1}...`);
+        console.log(`  - Setting up events for input ${index + 1}...`);
         setupInputEvents(input);
     });
     
-    debugLog('init', '🔍 DEBUG initializeDateTimePickers: COMPLETE');
+    console.log('🔍 DEBUG initializeDateTimePickers: COMPLETE');
 }
 
 /**
  * Setup event listeners cho input
  */
 function setupInputEvents(input) {
-    debugLog('setup', '🔍 DEBUG setupInputEvents: START');
-    debugLog('init', '  - Input:', input);
-    debugLog('init', '  - Input class:', input.className);
-    debugLog('setup', ' - Input readonly:', input.hasAttribute('readonly'));
-    debugLog('init', '  - Input type:', input.type);
+    console.log('🔍 DEBUG setupInputEvents: START');
+    console.log('  - Input:', input);
+    console.log('  - Input class:', input.className);
+    console.log('  - Input readonly:', input.hasAttribute('readonly'));
+    console.log('  - Input type:', input.type);
     
     const wrapper = input.closest('.datetime-input-wrapper');
     if (!wrapper) {
-        debugError('❌ No wrapper found for input in setupInputEvents');
+        console.error('❌ No wrapper found for input in setupInputEvents');
         return;
     }
     
-    debugLog('init', '  - Wrapper found:', wrapper);
+    console.log('  - Wrapper found:', wrapper);
     
     // Tạo popup nếu chưa có
     if (!wrapper.querySelector('.datetime-popup')) {
-        debugLog('init', '  - Creating popup...');
+        console.log('  - Creating popup...');
         createPopupForInput(input);
     } else {
-        debugLog('setup', '  - Popup already exists');
+        console.log('  - Popup already exists');
     }
     
     // Remove old listeners bằng cách tạo một input mới
-    debugLog('setup', '  - Adding event listeners...');
+    console.log('  - Adding event listeners...');
     
     // Click event
     input.addEventListener('click', function(e) {
-        debugLog('events', '🔍 DEBUG: Input clicked event fired');
-        debugLog('init', '  - Event:', e);
-        debugLog('init', '  - Target:', e.target);
-        debugLog('init', '  - Current target:', e.currentTarget);
+        console.log('🔍 DEBUG: Input clicked event fired');
+        console.log('  - Event:', e);
+        console.log('  - Target:', e.target);
+        console.log('  - Current target:', e.currentTarget);
         e.preventDefault();
         e.stopPropagation();
         handleInputClick(this);
     }, true);
     
     input.addEventListener('mousedown', function(e) {
-        debugLog('events', '🔍 DEBUG: Input mousedown event fired');
+        console.log('🔍 DEBUG: Input mousedown event fired');
         e.preventDefault();
         e.stopPropagation();
         handleInputClick(this);
@@ -214,7 +216,7 @@ function setupInputEvents(input) {
     
     // Touch events cho mobile
     input.addEventListener('touchstart', function(e) {
-        debugLog('events', '🔍 DEBUG: Input touchstart event fired');
+        console.log('🔍 DEBUG: Input touchstart event fired');
         e.preventDefault();
         e.stopPropagation();
         handleInputClick(this);
@@ -222,7 +224,7 @@ function setupInputEvents(input) {
     
     // Focus event
     input.addEventListener('focus', function(e) {
-        debugLog('events', '🔍 DEBUG: Input focus event fired');
+        console.log('🔍 DEBUG: Input focus event fired');
         e.preventDefault();
         e.stopPropagation();
         handleInputClick(this);
@@ -230,74 +232,74 @@ function setupInputEvents(input) {
     
     // Thêm double-click để test
     input.addEventListener('dblclick', function(e) {
-        debugLog('events', '🔍 DEBUG: Input double-click event fired');
+        console.log('🔍 DEBUG: Input double-click event fired');
         e.preventDefault();
         e.stopPropagation();
         handleInputClick(this);
     }, true);
     
-    debugLog('setup', '🔍 DEBUG setupInputEvents: COMPLETE');
+    console.log('🔍 DEBUG setupInputEvents: COMPLETE');
 }
 
 /**
  * Xử lý khi click vào input
  */
 function handleInputClick(input) {
-    debugLog('init', '🔍 DEBUG handleInputClick: START');
-    debugLog('init', '  - Input:', input);
-    debugLog('init', '  - Input value:', input.value);
-    debugLog('events', '  - Input readonly:', input.hasAttribute('readonly'));
-    debugLog('init', '  - Input disabled:', input.disabled);
-    debugLog('init', '  - Input style pointer-events:', getComputedStyle(input).pointerEvents);
-    debugLog('init', '  - Input parent:', input.parentElement);
-    debugLog('events', '  - Input wrapper:', input.closest('.datetime-input-wrapper'));
+    console.log('🔍 DEBUG handleInputClick: START');
+    console.log('  - Input:', input);
+    console.log('  - Input value:', input.value);
+    console.log('  - Input readonly:', input.hasAttribute('readonly'));
+    console.log('  - Input disabled:', input.disabled);
+    console.log('  - Input style pointer-events:', getComputedStyle(input).pointerEvents);
+    console.log('  - Input parent:', input.parentElement);
+    console.log('  - Input wrapper:', input.closest('.datetime-input-wrapper'));
     
     // Nếu input chưa có giá trị → Tự động set = Now
     if (!input.value || input.value.trim() === '') {
-        debugLog('events', '  - Input is empty, setting to Now');
+        console.log('  - Input is empty, setting to Now...');
         const now = new Date();
         const nowStr = formatLocalDateTime(now);
         input.value = nowStr;
-        debugLog('init', '  - Set value to:', nowStr);
+        console.log('  - Set value to:', nowStr);
     }
     
-    debugLog('init', '  - Calling openPopup...');
+    console.log('  - Calling openPopup...');
     openPopup(input);
-    debugLog('init', '🔍 DEBUG handleInputClick: COMPLETE');
+    console.log('🔍 DEBUG handleInputClick: COMPLETE');
 }
 
 /**
  * Tạo popup cho input
  */
 function createPopupForInput(input) {
-    debugLog('init', '🔍 DEBUG createPopupForInput: START');
-    debugLog('init', '  - Input:', input);
+    console.log('🔍 DEBUG createPopupForInput: START');
+    console.log('  - Input:', input);
     
     const wrapper = input.closest('.datetime-input-wrapper');
     if (!wrapper) {
-        debugLog('init', '  - No wrapper found, creating new wrapper...');
+        console.log('  - No wrapper found, creating new wrapper...');
         const newWrapper = document.createElement('div');
         newWrapper.className = 'datetime-input-wrapper';
         input.parentNode.insertBefore(newWrapper, input);
         newWrapper.appendChild(input);
-        debugLog('init', '  - Wrapper created:', newWrapper);
+        console.log('  - Wrapper created:', newWrapper);
         return createPopupForInput(input);
     }
     
-    debugLog('init', '  - Wrapper found:', wrapper);
+    console.log('  - Wrapper found:', wrapper);
     
     // Kiểm tra xem đã có popup chưa
     if (wrapper.querySelector('.datetime-popup')) {
-        debugLog('popup', '  - Popup already exists, skipping creation');
+        console.log('  - Popup already exists, skipping...');
         return;
     }
     
-    debugLog('init', '  - Creating popup element...');
+    console.log('  - Creating popup element...');
     
     // Tạo note BÊN NGOÀI (nếu chưa có)
     let note = wrapper.querySelector('.datetime-reference-note');
     if (!note) {
-        debugLog('init', '  - Creating note element...');
+        console.log('  - Creating note element...');
         note = document.createElement('div');
         note.className = 'datetime-reference-note';
         note.style.display = 'none';
@@ -308,9 +310,9 @@ function createPopupForInput(input) {
             </small>
         `;
         wrapper.appendChild(note);
-        debugLog('init', '  - Note created:', note);
+        console.log('  - Note created:', note);
     } else {
-        debugLog('init', '  - Note already exists:', note);
+        console.log('  - Note already exists:', note);
     }
     
     // Tạo popup
@@ -359,24 +361,24 @@ function createPopupForInput(input) {
     `;
     
     wrapper.appendChild(popup);
-    debugLog('init', '  - Popup created and appended:', popup);
-    debugLog('popup', '  - Popup HTML: ' + popup.innerHTML.substring(0, 100) + '...');
+    console.log('  - Popup created and appended:', popup);
+    console.log('  - Popup HTML:', popup.outerHTML.substring(0, 200) + '...');
     
     // Setup events cho popup
-    debugLog('init', '  - Setting up popup events...');
+    console.log('  - Setting up popup events...');
     setupPopupEvents(input, popup, note);
     
-    debugLog('init', '🔍 DEBUG createPopupForInput: COMPLETE');
+    console.log('🔍 DEBUG createPopupForInput: COMPLETE');
 }
 
 /**
  * Setup events cho popup
  */
 function setupPopupEvents(input, popup, note) {
-    debugLog('init', '🔍 DEBUG setupPopupEvents: START');
-    debugLog('init', '  - Input:', input);
-    debugLog('init', '  - Popup:', popup);
-    debugLog('init', '  - Note:', note);
+    console.log('🔍 DEBUG setupPopupEvents: START');
+    console.log('  - Input:', input);
+    console.log('  - Popup:', popup);
+    console.log('  - Note:', note);
     
     // ✅ FIX: Query từ DOM thay vì nhận từ parameters
     const popupInput = popup.querySelector('.datetime-popup-input');
@@ -385,7 +387,7 @@ function setupPopupEvents(input, popup, note) {
     const btnApplyCustom = popup.querySelector('.btn-apply-custom');
     const refOffset = note ? note.querySelector('.ref-offset') : null;
     
-    debugLog('init', '  - Elements found:', {
+    console.log('  - Elements found:', {
         popupInput: !!popupInput,
         btnClose: !!btnClose,
         quickBtns: quickBtns.length,
@@ -483,7 +485,7 @@ function setupPopupEvents(input, popup, note) {
             newBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                debugLog('init', '🔍 DEBUG: Quick button clicked:', this.getAttribute('data-offset'));
+                console.log('🔍 DEBUG: Quick button clicked:', this.getAttribute('data-offset'));
                 const offset = this.getAttribute('data-offset');
                 const currentPopupInput = popup.querySelector('.datetime-popup-input');
                 applyQuickAction(input, currentPopupInput, offset, note, refOffset);
@@ -499,7 +501,7 @@ function setupPopupEvents(input, popup, note) {
         newBtnApply.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            debugLog('init', '🔍 DEBUG: Custom apply clicked');
+            console.log('🔍 DEBUG: Custom apply clicked');
             const amount = popup.querySelector('.custom-amount').value;
             const unit = popup.querySelector('.custom-unit').value;
             if (amount && amount > 0) {
@@ -518,7 +520,7 @@ function setupPopupEvents(input, popup, note) {
         newBtnClose.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            debugLog('init', '🔍 DEBUG: Close button clicked');
+            console.log('🔍 DEBUG: Close button clicked');
             closePopup(popup);
         });
     }
@@ -526,26 +528,26 @@ function setupPopupEvents(input, popup, note) {
     // ✅ FIX: Click outside để đóng popup
     document.addEventListener('click', function closeOnOutsideClick(e) {
         if (!popup.contains(e.target) && !input.contains(e.target)) {
-            debugLog('init', '🔍 DEBUG: Clicked outside popup, closing...');
+            console.log('🔍 DEBUG: Clicked outside popup, closing...');
             closePopup(popup);
             document.removeEventListener('click', closeOnOutsideClick);
         }
     });
     
-    debugLog('init', '🔍 DEBUG setupPopupEvents: COMPLETE');
+    console.log('🔍 DEBUG setupPopupEvents: COMPLETE');
 }
 
 /**
  * Mở popup
  */
 function openPopup(input) {
-    debugLog('init', '🔍 DEBUG openPopup: START');
-    debugLog('init', '  - Input:', input);
-    debugLog('init', '  - Input tagName:', input.tagName);
-    debugLog('init', '  - Input value:', input.value);
-    debugLog('popup', '  - Input readonly:', input.hasAttribute('readonly'));
-    debugLog('init', '  - Input disabled:', input.disabled);
-    debugLog('init', '  - Input computed style:', {
+    console.log('🔍 DEBUG openPopup: START');
+    console.log('  - Input:', input);
+    console.log('  - Input tagName:', input.tagName);
+    console.log('  - Input value:', input.value);
+    console.log('  - Input readonly:', input.hasAttribute('readonly'));
+    console.log('  - Input disabled:', input.disabled);
+    console.log('  - Input computed style:', {
         display: getComputedStyle(input).display,
         visibility: getComputedStyle(input).visibility,
         pointerEvents: getComputedStyle(input).pointerEvents,
@@ -554,26 +556,26 @@ function openPopup(input) {
     
     const wrapper = input.closest('.datetime-input-wrapper');
     if (!wrapper) {
-        debugError('❌ No wrapper found for input');
+        console.error('❌ No wrapper found for input');
         return;
     }
     
-    debugLog('init', '  - Wrapper found:', wrapper);
+    console.log('  - Wrapper found:', wrapper);
     
     let popup = wrapper.querySelector('.datetime-popup');
     if (!popup) {
-        debugLog('popup', '  - No popup found, creating...');
+        console.log('  - Popup not found, creating...');
         createPopupForInput(input);
         popup = wrapper.querySelector('.datetime-popup');
     }
     
     if (!popup) {
-        debugError('❌ Failed to create popup');
+        console.error('❌ Failed to create popup');
         return;
     }
     
-    debugLog('init', '  - Popup found:', popup);
-    debugLog('init', '  - Popup computed style BEFORE:', {
+    console.log('  - Popup found:', popup);
+    console.log('  - Popup computed style BEFORE:', {
         display: getComputedStyle(popup).display,
         visibility: getComputedStyle(popup).visibility,
         position: getComputedStyle(popup).position,
@@ -584,21 +586,21 @@ function openPopup(input) {
     
     // ✅ FIX: Remove readonly để cho phép gõ thủ công
     input.removeAttribute('readonly');
-    debugLog('init', '  - Removed readonly from input');
+    console.log('  - Removed readonly from input');
     
     // Set value cho popup input
     const popupInput = popup.querySelector('.datetime-popup-input');
     if (popupInput) {
         popupInput.value = input.value || '';
         popupInput.removeAttribute('readonly');
-        debugLog('init', '  - Popup input ready:', popupInput);
+        console.log('  - Popup input ready:', popupInput);
     } else {
-        debugError('❌ Popup input not found!');
+        console.error('❌ Popup input not found!');
     }
     
     // Tính toán vị trí popup
     const rect = input.getBoundingClientRect();
-    debugLog('init', '  - Input rect:', rect);
+    console.log('  - Input rect:', rect);
     
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
@@ -626,7 +628,7 @@ function openPopup(input) {
     popup.style.zIndex = '99999';
     popup.style.display = 'block';
     
-    debugLog('init', '  - Popup style set:', {
+    console.log('  - Popup style set:', {
         position: popup.style.position,
         top: popup.style.top,
         left: popup.style.left,
@@ -634,7 +636,7 @@ function openPopup(input) {
         display: popup.style.display
     });
     
-    debugLog('init', '  - Popup computed style AFTER:', {
+    console.log('  - Popup computed style AFTER:', {
         display: getComputedStyle(popup).display,
         visibility: getComputedStyle(popup).visibility,
         position: getComputedStyle(popup).position,
@@ -648,31 +650,31 @@ function openPopup(input) {
         setTimeout(function() {
             popupInput.focus();
             popupInput.select();
-            debugLog('popup', '  - Popup input focused and selected');
-            debugLog('init', '  - Popup input activeElement:', document.activeElement);
+            console.log('  - Popup input focused');
+            console.log('  - Popup input activeElement:', document.activeElement);
         }, 100);
     }
     
-    debugLog('init', '🔍 DEBUG openPopup: COMPLETE');
+    console.log('🔍 DEBUG openPopup: COMPLETE');
 }
 
 /**
  * Đóng popup
  */
 function closePopup(popup) {
-    debugLog('popup', '🔍 DEBUG closePopup: START');
-    debugLog('init', '  - Popup:', popup);
+    console.log('🔍 DEBUG closePopup: START');
+    console.log('  - Popup:', popup);
     
     if (!popup) {
-        debugError('  ❌ Popup is null!');
+        console.error('  ❌ Popup is null!');
         return;
     }
     
-    debugLog('init', '  - Popup display BEFORE:', getComputedStyle(popup).display);
+    console.log('  - Popup display BEFORE:', getComputedStyle(popup).display);
     
     popup.style.display = 'none';
     
-    debugLog('init', '  - Popup display AFTER:', getComputedStyle(popup).display);
+    console.log('  - Popup display AFTER:', getComputedStyle(popup).display);
     
     // ✅ FIX: Restore readonly sau khi đóng popup
     const wrapper = popup.closest('.datetime-input-wrapper');
@@ -680,11 +682,11 @@ function closePopup(popup) {
         const input = wrapper.querySelector('.datetime-input');
         if (input) {
             input.setAttribute('readonly', 'readonly');
-            debugLog('init', '  - Restored readonly to input');
+            console.log('  - Restored readonly to input');
         }
     }
     
-    debugLog('popup', '🔍 DEBUG closePopup: COMPLETE');
+    console.log('🔍 DEBUG closePopup: COMPLETE');
 }
 
 /**
@@ -696,14 +698,14 @@ function applyQuickAction(input, popupInput, offset, note, refOffset) {
     const referenceValue = previousInput ? previousInput.value : null;
     
     // DEBUG LOGS
-    debugLog('init', '🔍 DEBUG applyQuickAction:');
-    debugLog('init', '  - Current column:', input.getAttribute('data-column'));
-    debugLog('init', '  - Previous column:', previousInput ? previousInput.getAttribute('data-column') : 'NONE');
-    debugLog('init', '  - Reference value:', referenceValue);
-    debugLog('init', '  - Offset:', offset);
-    debugLog('init', '  - Input element:', input);
-    debugLog('init', '  - Note element:', note);
-    debugLog('init', '  - refOffset element:', refOffset);
+    console.log('🔍 DEBUG applyQuickAction:');
+    console.log('  - Current column:', input.getAttribute('data-column'));
+    console.log('  - Previous column:', previousInput ? previousInput.getAttribute('data-column') : 'NONE');
+    console.log('  - Reference value:', referenceValue);
+    console.log('  - Offset:', offset);
+    console.log('  - Input element:', input);
+    console.log('  - Note element:', note);
+    console.log('  - refOffset element:', refOffset);
     
     if (!referenceValue) {
         alert('Cột trước đó chưa có giá trị!');
@@ -714,30 +716,30 @@ function applyQuickAction(input, popupInput, offset, note, refOffset) {
     const newValue = calculateOffset(referenceValue, offset);
     
     // DEBUG LOGS
-    debugLog('init', '  - Calculated new value:', newValue);
-    debugLog('init', '  - Reference date:', new Date(referenceValue).toLocaleString('vi-VN'));
-    debugLog('init', '  - New date:', new Date(newValue).toLocaleString('vi-VN'));
+    console.log('  - Calculated new value:', newValue);
+    console.log('  - Reference date:', new Date(referenceValue).toLocaleString('vi-VN'));
+    console.log('  - New date:', new Date(newValue).toLocaleString('vi-VN'));
     
     popupInput.value = newValue;
     input.value = newValue;
     
     // Hiển thị ghi chú BÊN NGOÀI
-    debugLog('init', '  - Calling showReferenceNote...');
+    console.log('  - Calling showReferenceNote...');
     showReferenceNote(note, refOffset, offset);
     
     // Lưu offset vào data attribute
-    debugLog('init', '  - Setting data-ref-offset:', offset);
+    console.log('  - Setting data-ref-offset:', offset);
     input.setAttribute('data-ref-offset', offset);
     
     // DEBUG: Verify attribute was set
     const verifyOffset = input.getAttribute('data-ref-offset');
-    debugLog('init', '  - Verified data-ref-offset:', verifyOffset === offset ? `✓ SET (${verifyOffset})` : `✗ FAILED (expected ${offset}, got ${verifyOffset})`);
+    console.log('  - Verified data-ref-offset:', verifyOffset === offset ? `✓ SET (${verifyOffset})` : `✗ FAILED (expected ${offset}, got ${verifyOffset})`);
     
     // DEBUG: Verify note is visible
     setTimeout(function() {
         const noteDisplay = note ? getComputedStyle(note).display : 'NONE';
         const noteText = refOffset ? refOffset.textContent : 'NO TEXT';
-        debugLog('init', '  - Note status after show:', {
+        console.log('  - Note status after show:', {
             display: noteDisplay,
             text: noteText,
             elementExists: !!note
@@ -750,7 +752,7 @@ function applyQuickAction(input, popupInput, offset, note, refOffset) {
     // Mark dirty
     markRowDirty(input);
     
-    debugLog('init', '🔍 DEBUG applyQuickAction - Completed');
+    console.log('🔍 DEBUG applyQuickAction - Completed');
 }
 
 /**
@@ -760,10 +762,10 @@ function applyQuickAction(input, popupInput, offset, note, refOffset) {
  * @param {string} offset - Offset string (optional nếu param 1 là input)
  */
 function showReferenceNote(inputOrNote, offsetOrRefOffset, offset) {
-    debugLog('offset', '🔍 DEBUG showReferenceNote:');
-    debugLog('init', '  - Param 1:', inputOrNote);
-    debugLog('init', '  - Param 2:', offsetOrRefOffset);
-    debugLog('init', '  - Param 3:', offset);
+    console.log('🔍 DEBUG showReferenceNote:');
+    console.log('  - Param 1:', inputOrNote);
+    console.log('  - Param 2:', offsetOrRefOffset);
+    console.log('  - Param 3:', offset);
     
     let note, refOffset, actualOffset;
     
@@ -775,7 +777,7 @@ function showReferenceNote(inputOrNote, offsetOrRefOffset, offset) {
         
         const wrapper = input.closest('.datetime-input-wrapper');
         if (!wrapper) {
-            debugError('  ❌ No wrapper found for input!');
+            console.error('  ❌ No wrapper found for input!');
             return;
         }
         
@@ -802,27 +804,27 @@ function showReferenceNote(inputOrNote, offsetOrRefOffset, offset) {
     }
     
     if (!note) {
-        debugError('  ❌ Note element is null!');
+        console.error('  ❌ Note element is null!');
         return;
     }
     
     if (!refOffset) {
-        debugError('  ❌ refOffset element is null!');
+        console.error('  ❌ refOffset element is null!');
         return;
     }
     
     if (!actualOffset) {
-        debugError('  ❌ Offset is null or undefined!');
+        console.error('  ❌ Offset is null or undefined!');
         return;
     }
     
     const offsetText = formatOffset(actualOffset);
-    debugLog('init', '  - Formatted offset text:', offsetText);
+    console.log('  - Formatted offset text:', offsetText);
     
     refOffset.textContent = offsetText;
     note.style.display = 'block';
     
-    debugLog('offset', '🔍 DEBUG showReferenceNote - Completed');
+    console.log('🔍 DEBUG showReferenceNote - Completed');
 }
 
 /**
@@ -856,7 +858,7 @@ function formatOffset(offset) {
  */
 function calculateOffset(baseValue, offset) {
     if (!baseValue) {
-        debugError('❌ calculateOffset: baseValue is empty');
+        console.error('❌ calculateOffset: baseValue is empty');
         return null;
     }
     
@@ -864,13 +866,13 @@ function calculateOffset(baseValue, offset) {
     // Format: "YYYY-MM-DDTHH:mm"
     const baseDate = parseLocalDateTime(baseValue);
     if (!baseDate || isNaN(baseDate.getTime())) {
-        debugError('❌ calculateOffset: Invalid base date:', baseValue);
+        console.error('❌ calculateOffset: Invalid base date:', baseValue);
         return baseValue;
     }
     
     const match = offset.match(/^([+-]?)(\d+)([smhdwMqy])$/);
     if (!match) {
-        debugError('❌ calculateOffset: Invalid offset format:', offset);
+        console.error('❌ calculateOffset: Invalid offset format:', offset);
         return baseValue;
     }
     
@@ -880,7 +882,7 @@ function calculateOffset(baseValue, offset) {
     
     const unitInfo = OFFSET_UNITS[unit];
     if (!unitInfo) {
-        debugError('❌ calculateOffset: Unknown unit:', unit);
+        console.error('❌ calculateOffset: Unknown unit:', unit);
         return baseValue;
     }
     
@@ -891,11 +893,11 @@ function calculateOffset(baseValue, offset) {
     const result = formatLocalDateTime(newDate);
     
     // DEBUG LOGS
-    debugLog('init', '🔍 DEBUG calculateOffset:');
-    debugLog('init', '  - Base (local):', baseValue, '→', baseDate.toLocaleString('vi-VN'));
-    debugLog('init', '  - Offset:', offset, '=', amount, unitInfo.name, '=', ms, 'ms');
-    debugLog('init', '  - Result (local):', result, '→', newDate.toLocaleString('vi-VN'));
-    debugLog('init', '  - Calculation:', baseDate.getTime(), '+', ms, '=', newDate.getTime());
+    console.log('🔍 DEBUG calculateOffset:');
+    console.log('  - Base (local):', baseValue, '→', baseDate.toLocaleString('vi-VN'));
+    console.log('  - Offset:', offset, '=', amount, unitInfo.name, '=', ms, 'ms');
+    console.log('  - Result (local):', result, '→', newDate.toLocaleString('vi-VN'));
+    console.log('  - Calculation:', baseDate.getTime(), '+', ms, '=', newDate.getTime());
     
     return result;
 }
@@ -976,7 +978,7 @@ window.DateTimePicker = {
     parseLocalDateTime: parseLocalDateTime
 };
 
-debugLog('init', '✅ DateTimePicker module loaded');
+console.log('✅ DateTimePicker module loaded');
 // Mark đã load
 window.DateTimePickerModule = true;
 })();

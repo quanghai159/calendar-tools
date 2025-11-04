@@ -367,17 +367,17 @@ def register():
             return redirect(url_for('index'))
             
         except Exception as e:
-                error_msg = str(e)
-                if 'EMAIL_EXISTS' in error_msg:
-                    flash('Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác', 'error')
-                elif 'WEAK_PASSWORD' in error_msg:
-                    flash('Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn', 'error')
-                elif 'INVALID_EMAIL' in error_msg:
-                    flash('Email không hợp lệ', 'error')
-                else:
-                    flash(f'Lỗi đăng ký: {error_msg}', 'error')
-                return render_template('register_adminlte.html')
-        
+                    error_msg = str(e)
+                    if 'EMAIL_EXISTS' in error_msg:
+                        flash('Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác', 'error')
+                    elif 'WEAK_PASSWORD' in error_msg:
+                        flash('Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn', 'error')
+                    elif 'INVALID_EMAIL' in error_msg:
+                        flash('Email không hợp lệ', 'error')
+                    else:
+                        flash(f'Lỗi đăng ký: {error_msg}', 'error')
+                    return render_template('register_adminlte.html')
+            
         # GET request
         return render_template('register_adminlte.html')
 

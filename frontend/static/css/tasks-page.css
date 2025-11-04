@@ -100,8 +100,7 @@
 .task-table td {
     white-space: nowrap;
     vertical-align: middle;
-    padding: 0.75rem;
-    border-top: 1px solid #dee2e6;
+    /* padding và border đã được định nghĩa ở dưới (#tasks-table rules) */
 }
 
 .task-table td[contenteditable="true"] {
@@ -126,43 +125,3 @@
     overflow-x: visible !important;
     overflow-y: visible !important;
 }
-
-/* Fix header alignment với FixedColumns */
-#tasks-table_wrapper .DTFC_LeftWrapper table,
-#tasks-table_wrapper .DTFC_RightWrapper table {
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-#tasks-table_wrapper .DTFC_LeftWrapper thead th,
-#tasks-table_wrapper .DTFC_RightWrapper thead th {
-    background-color: #343a40;
-    color: #ffffff;
-    font-weight: 600;
-    border-bottom: 2px solid #495057;
-    padding: 0.75rem;
-    vertical-align: middle;
-}
-
-/* Đảm bảo fixed columns có cùng width với main table */
-#tasks-table_wrapper .DTFC_LeftWrapper table,
-#tasks-table_wrapper .DTFC_RightWrapper table {
-    width: 100% !important;
-}
-
-/* Fix cell alignment */
-#tasks-table_wrapper .DTFC_LeftWrapper td,
-#tasks-table_wrapper .DTFC_RightWrapper td {
-    padding: 0.75rem;
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-/* Ensure main table and fixed columns have same cell heights */
-#tasks-table thead th,
-#tasks-table tbody td {
-    height: auto;
-    min-height: 38px;
-    box-sizing: border-box;
-}
-

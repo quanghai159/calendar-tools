@@ -7,34 +7,6 @@
  * - Track dirty rows
  */
 
-// ============================================================
-// DEBUG CONFIGURATION
-// ============================================================
-// 
-// 🎯 HƯỚNG DẪN SỬ DỤNG:
-// - Set DEBUG_ENABLED = true  → Hiển thị logs
-// - Set DEBUG_ENABLED = false → Tắt hoàn toàn (PRODUCTION)
-//
-// ============================================================
-
-const DEBUG_TASK_ACTIONS = false;  // ✅ Set false to disable logs
-
-// Debug helper functions
-function debugLog(category, ...args) {
-    if (DEBUG_TASK_ACTIONS) {
-        console.log(...args);
-    }
-}
-
-function debugError(...args) {
-    if (DEBUG_TASK_ACTIONS) {
-        console.error(...args);
-    }
-}
-
-// ============================================================
-
-
 /**
  * Mark row là dirty (đã thay đổi)
  */
@@ -80,7 +52,7 @@ function createSaveAllButton() {
     const tableWrapper = document.querySelector('.task-table-wrapper') || 
                          document.querySelector('.table-responsive');
     if (!tableWrapper) {
-        debugError('Không tìm thấy table wrapper');
+        console.error('Không tìm thấy table wrapper');
         return;
     }
     
@@ -121,7 +93,7 @@ function saveAllRows() {
     
     const dirtyRows = document.querySelectorAll('[data-dirty="true"]');
     if (dirtyRows.length === 0) {
-        debugLog('init', '✓ No dirty rows to save');
+        console.log('✓ No dirty rows to save');
         return;
     }
     
@@ -161,7 +133,7 @@ function saveAllRows() {
             updateSaveAllButton();
         })
         .catch(error => {
-            debugError('❌ Error saving all:', error);
+            console.error('❌ Error saving all:', error);
             alert('Lỗi khi lưu: ' + error.message);
         })
         .finally(() => {
@@ -181,7 +153,7 @@ function saveRowPromise(btn) {
         const isNew = !data.task_id || data.task_id === 'NEW' || data.task_id === '';
         const url = isNew ? '/api/task' : `/api/task/${data.task_id}`;
         
-        debugLog('init', '🔍 DEBUG saveRowPromise:', {
+        console.log('🔍 DEBUG saveRowPromise:', {
             task_id: data.task_id,
             isNew: isNew,
             url: url
@@ -224,11 +196,11 @@ function saveRowPromise(btn) {
         })
         .then(r => r.json())
         .then(res => {
-            debugLog('init', '🔍 DEBUG saveRowPromise response:', res);
+            console.log('🔍 DEBUG saveRowPromise response:', res);
             if (res.status === 'success') {
                 if (isNew && res.task_id) {
                     data.tr.setAttribute('data-task-id', res.task_id);
-                    debugLog('init', '  - Updated task_id:', res.task_id);
+                    console.log('  - Updated task_id:', res.task_id);
                 }
                 resolve(res);
             } else {
@@ -236,7 +208,7 @@ function saveRowPromise(btn) {
             }
         })
         .catch(error => {
-            debugError('❌ Error in saveRowPromise:', error);
+            console.error('❌ Error in saveRowPromise:', error);
             reject(error);
         });
     });
@@ -246,7 +218,7 @@ function saveRowPromise(btn) {
  * Nhân bản Task
  */
 function duplicateRow(btn) {
-    debugLog('init', '🔍 DEBUG duplicateRow');
+    console.log('🔍 DEBUG duplicateRow: START');
     const row = btn.closest('tr');
     const tbody = row.parentElement;
     
@@ -258,7 +230,7 @@ function duplicateRow(btn) {
     
     // Tạo row mới
     const newRow = row.cloneNode(true);
-    debugLog('init', '  - New row cloned:', newRow);
+    console.log('  - New row cloned:', newRow);
     
     // Xóa task_id (để tạo task mới)
     newRow.removeAttribute('data-task-id');
@@ -277,7 +249,7 @@ function duplicateRow(btn) {
     // ✅ FIX: Xóa popups đã được clone (sẽ tạo lại sau)
     const clonedPopups = newRow.querySelectorAll('.datetime-popup');
     clonedPopups.forEach(function(popup) {
-        debugLog('init', '  - Removing cloned popup:', popup);
+        console.log('  - Removing cloned popup:', popup);
         popup.remove();
     });
     
@@ -309,20 +281,20 @@ function duplicateRow(btn) {
     
     // Chèn row mới ngay sau row hiện tại
     tbody.insertBefore(newRow, row.nextSibling);
-    debugLog('init', '  - New row inserted');
+    console.log('  - New row inserted');
     
     // ✅ FIX: Re-initialize datetime pickers cho row mới (sau khi insert vào DOM)
     setTimeout(function() {
         const newInputs = newRow.querySelectorAll('.datetime-input');
-        debugLog('init', `  - Found ${newInputs.length} datetime inputs in new row`);
+        console.log(`  - Found ${newInputs.length} datetime inputs in new row`);
         
         newInputs.forEach(function(input, index) {
-            debugLog('init', `  - Processing input ${index + 1}:`, input);
+            console.log(`  - Processing input ${index + 1}:`, input);
             
             // Đảm bảo có wrapper
             let wrapper = input.closest('.datetime-input-wrapper');
             if (!wrapper) {
-                debugLog('init', `    - Creating wrapper for input ${index + 1}`);
+                console.log(`    - Creating wrapper for input ${index + 1}`);
                 wrapper = document.createElement('div');
                 wrapper.className = 'datetime-input-wrapper';
                 input.parentNode.insertBefore(wrapper, input);
@@ -332,29 +304,29 @@ function duplicateRow(btn) {
             // ✅ FIX: Xóa popup cũ nếu có (từ clone)
             const oldPopup = wrapper.querySelector('.datetime-popup');
             if (oldPopup) {
-                debugLog('init', `    - Removing old popup from input ${index + 1}`);
+                console.log(`    - Removing old popup from input ${index + 1}`);
                 oldPopup.remove();
             }
             
             // ✅ FIX: Tạo popup mới và setup events
             if (window.DateTimePicker) {
-                debugLog('init', `    - Creating popup for input ${index + 1}`);
+                console.log(`    - Creating popup for input ${index + 1}`);
                 window.DateTimePicker.createPopupForInput(input);
                 
-                debugLog('init', `    - Setting up events for input ${index + 1}`);
+                console.log(`    - Setting up events for input ${index + 1}`);
                 window.DateTimePicker.setupInputEvents(input);
             } else {
-                debugError('    ❌ DateTimePicker not available!');
+                console.error('    ❌ DateTimePicker not available!');
             }
         });
         
         // ✅ FIX: Initialize copy/paste cho row mới
         if (window.DateTimeCopyPaste && window.DateTimeCopyPaste.initializeCopyPaste) {
-            debugLog('init', '  - Initializing copy/paste for new row');
+            console.log('  - Initializing copy/paste for new row');
             window.DateTimeCopyPaste.initializeCopyPaste();
         }
         
-        debugLog('init', '🔍 DEBUG duplicateRow');
+        console.log('🔍 DEBUG duplicateRow: COMPLETE');
     }, 100);
     
     // Mark row mới là dirty

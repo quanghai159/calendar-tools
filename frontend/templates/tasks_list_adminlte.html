@@ -16,6 +16,48 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.bootstrap5.min.css">
 {% endblock %}
 
+<!--
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                     🔧 DEBUG CONFIGURATION                                 ║
+║                  tasks_list_adminlte.html - Top of File                   ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+
+📍 VỊ TRÍ: Đầu file tasks_list_adminlte.html (line ~18)
+
+Tìm dòng "$(document).ready(function() {"
+hoặc tìm "Initialize on page load"
+
+Debug sẽ nằm ở ngay đầu đoạn đó
+
+🎯 CÁC FLAG DEBUG TRONG FILE NÀY:
+
+1. DEBUG_PAGE_LOAD (Line ~690)
+   - Page loading và datetime pickers initialization
+   - Set: const DEBUG_PAGE_LOAD = true/false
+
+2. DEBUG_FIXED_COLUMNS (Line ~815)
+   - FixedColumns initialization và wrapper detection
+   - Set: const DEBUG_FIXED_COLUMNS = true/false
+
+3. DEBUG_ALIGNMENT (Line ~852)
+   - Column alignment analysis (chi tiết nhất)
+   - Phân tích width, padding, border của từng cột
+   - Set: const DEBUG_ALIGNMENT = true/false
+
+⚙️ CÁCH BẬT/TẮT:
+   1. Tìm các dòng "const DEBUG_..." trong file
+   2. Đổi giá trị: true = bật, false = tắt
+   3. Reload trang để áp dụng
+
+📌 GHI CHÚ:
+   - Tắt tất cả khi deploy PRODUCTION
+   - DEBUG_ALIGNMENT rất chi tiết, chỉ bật khi cần troubleshoot
+   - Search "const DEBUG_" để tìm nhanh các flags
+
+🔍 NHANH: Ctrl/Cmd + F → "const DEBUG_"
+
+-->
+
 {% block content %}
 <!-- Xóa phần Action Buttons ở đầu, chuyển vào card-tools -->
 <!-- Hoặc giữ lại nhưng dùng AdminLTE button group -->
@@ -477,8 +519,8 @@ function addNewTaskRow() {
     rowData.push('');
     
     // Thêm row vào DataTable
-    const rowNode = window.tasksDataTable.row.add(rowData).draw(false).node();
-
+    const addedRow = window.tasksDataTable.row.add(rowData);
+    
     // ✅ FIX 2: Tính toán trang và chuyển đến trang chứa row mới
     const pageLength = window.tasksDataTable.page.len();
     const totalRows = window.tasksDataTable.rows().count(); // Bao gồm cả row mới
@@ -487,11 +529,40 @@ function addNewTaskRow() {
     // Chuyển đến trang cuối
     window.tasksDataTable.page(lastPageIndex).draw(false);
     
-    // Set attributes cho row
-    rowNode.setAttribute('data-task-id', 'NEW');
-    rowNode.setAttribute('data-dirty', 'true');
+    // ✅ LẤY LẠI rowNode SAU KHI DRAW để tránh reference bị mất
+    const rowNode = addedRow.node();
     
-    console.log('  - Row added to DataTable:', rowNode);
+    // Kiểm tra rowNode có tồn tại không
+    if (!rowNode) {
+        console.error('❌ rowNode is null after draw()');
+        // Thử tìm row theo cách khác
+        const allRows = window.tasksDataTable.rows().nodes();
+        const lastRow = allRows[allRows.length - 1];
+        if (lastRow) {
+            console.log('  ✅ Found last row as fallback');
+            lastRow.setAttribute('data-task-id', 'NEW');
+            lastRow.setAttribute('data-dirty', 'true');
+            
+            // Tiếp tục với lastRow
+            const cells = lastRow.querySelectorAll('td');
+            console.log('  - Found cells:', cells.length);
+            // ... rest of code
+        } else {
+            console.error('  ❌ Cannot find row at all. Aborting.');
+            alert('Lỗi tạo row mới. Vui lòng refresh trang.');
+            return;
+        }
+    } else {
+        // Set attributes cho row
+        rowNode.setAttribute('data-task-id', 'NEW');
+        rowNode.setAttribute('data-dirty', 'true');
+        
+        console.log('  - Row added to DataTable:', rowNode);
+        
+        // ✅ FIX: Lấy cells từ rowNode (không tạo mới)
+        const cells = rowNode.querySelectorAll('td');
+        console.log('  - Found cells:', cells.length);
+    }
     
     // ✅ FIX: Lấy cells từ rowNode (không tạo mới)
     const cells = rowNode.querySelectorAll('td');
@@ -686,9 +757,34 @@ function updateStatus(select, taskId) {
 
 // Initialize on page load
 $(document).ready(function() {
-    console.log('🔍 DEBUG: Page loaded, initializing datetime pickers...');
-    console.log('  - Found inputs:', document.querySelectorAll('.datetime-input').length);
-    console.log('  - DateTimePicker available:', typeof window.DateTimePicker !== 'undefined');
+    // ============================================================
+    // 🔧 DEBUG CONFIGURATION - BẬT/TẮT CÁC DEBUG LOGS
+    // ============================================================
+    // 
+    // 📍 VỊ TRÍ: tasks_list_adminlte.html - Line ~690
+    // 
+    // 🎯 CÁC FLAG DEBUG:
+    // - DEBUG_PAGE_LOAD: Page loading và datetime pickers
+    // - DEBUG_FIXED_COLUMNS: FixedColumns initialization
+    // - DEBUG_ALIGNMENT: Column alignment analysis (chi tiết)
+    //
+    // ⚙️ BẬT/TẮT:
+    //   true  = Hiển thị logs
+    //   false = Tắt hoàn toàn (PRODUCTION)
+    //
+    // ============================================================
+    
+    const DEBUG_PAGE_LOAD = false;      // ✅ Page load logs
+    const DEBUG_FIXED_COLUMNS = false;  // ✅ FixedColumns logs  
+    const DEBUG_ALIGNMENT = false;      // ✅ Column alignment analysis
+    
+    // ============================================================
+    
+    if (DEBUG_PAGE_LOAD) {
+        console.log('🔍 DEBUG: Page loaded, initializing datetime pickers...');
+        console.log('  - Found inputs:', document.querySelectorAll('.datetime-input').length);
+        console.log('  - DateTimePicker available:', typeof window.DateTimePicker !== 'undefined');
+    }
 
     // Initialize DataTables cho tasks table
     if ($('#tasks-table').length) {
@@ -710,7 +806,26 @@ $(document).ready(function() {
             "lengthMenu": [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "Tất cả"]],
             "order": [[0, "asc"]],
             "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+                "decimal": "",
+                "emptyTable": "Không có dữ liệu",
+                "info": "Hiển thị _START_ đến _END_ của _TOTAL_ bản ghi",
+                "infoEmpty": "Hiển thị 0 đến 0 của 0 bản ghi",
+                "infoFiltered": "(lọc từ _MAX_ tổng số bản ghi)",
+                "lengthMenu": "Hiển thị _MENU_ bản ghi",
+                "loadingRecords": "Đang tải...",
+                "processing": "Đang xử lý...",
+                "search": "Tìm kiếm:",
+                "zeroRecords": "Không tìm thấy bản ghi nào",
+                "paginate": {
+                    "first": "Đầu",
+                    "last": "Cuối",
+                    "next": "Sau",
+                    "previous": "Trước"
+                },
+                "aria": {
+                    "sortAscending": ": Sắp xếp tăng dần",
+                    "sortDescending": ": Sắp xếp giảm dần"
+                }
             },
             "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
                 "<'row'<'col-sm-12'tr>>" +
@@ -726,6 +841,12 @@ $(document).ready(function() {
                     window.DateTimeCopyPaste.initializeCopyPaste();
                 }
                 restoreAllReferenceNotes();
+
+                // ✅ THÊM: Force adjust columns sau mỗi draw
+                setTimeout(function() {
+                    tasksTable.columns.adjust();
+                }, 50);
+
             },
             "columnDefs": [
                 {
@@ -738,6 +859,11 @@ $(document).ready(function() {
                 }
             ]
         });
+
+        // ✅ THÊM: Force initial adjustment
+        setTimeout(function() {
+            tasksTable.columns.adjust().draw(false);
+        }, 200);
         
         // ✅ FIX 4: Custom search behavior - chỉ search khi Enter hoặc click button
         const searchInput = $('#tasks-table_wrapper .dataTables_filter input');
@@ -781,7 +907,193 @@ $(document).ready(function() {
         
         // ✅ Store DataTable instance globally NGAY SAU KHI KHỞI TẠO
         window.tasksDataTable = tasksTable;
-        console.log('✅ DataTable stored:', window.tasksDataTable !== undefined);
+        if (DEBUG_PAGE_LOAD) {
+            console.log('✅ DataTable stored:', window.tasksDataTable !== undefined);
+        }
+
+        // ✅ Sử dụng DEBUG_FIXED_COLUMNS flag
+        if (DEBUG_FIXED_COLUMNS) {
+            console.log('🔍 Checking FixedColumns...');
+            console.log('  - $.fn.dataTable.FixedColumns:', typeof $.fn.dataTable.FixedColumns);
+            console.log('  - isMobile:', isMobile);
+            console.log('  - Config fixedColumns:', tasksTable.settings()[0].oInit.fixedColumns);
+        }
+        
+        // ✅ FIX: Manual FixedColumns initialization if needed
+        if (!isMobile && $.fn.dataTable.FixedColumns) {
+            try {
+                // Try to initialize FixedColumns manually (for DataTables 1.13+)
+                if (!tasksTable.fixedColumns) {
+                    new $.fn.dataTable.FixedColumns(tasksTable, {
+                        leftColumns: 2
+                    });
+                    if (DEBUG_FIXED_COLUMNS) {
+                        console.log('✅ FixedColumns initialized manually');
+                    }
+                } else {
+                    if (DEBUG_FIXED_COLUMNS) {
+                        console.log('✅ FixedColumns already initialized');
+                    }
+                }
+                
+            } catch (e) {
+                if (DEBUG_FIXED_COLUMNS) {
+                    console.error('❌ FixedColumns initialization failed:', e);
+                }
+            }
+        } else {
+            console.log('ℹ️ FixedColumns disabled (mobile or extension not loaded)');
+        }
+        
+        if (DEBUG_ALIGNMENT) {
+            console.log('\n%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ff00');
+            console.log('%c🔍 DATATABLE COLUMN ALIGNMENT ANALYSIS', 'color: #00ff00; font-weight: bold; font-size: 14px');
+            console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'color: #00ff00');
+            
+            // Wait for DataTables to fully render
+            setTimeout(function() {
+                console.log('%c📊 1. TABLE CONFIGURATION', 'color: #ffa500; font-weight: bold');
+                console.log('  autoWidth:', tasksTable.settings()[0].oInit.autoWidth);
+                console.log('  scrollX:', tasksTable.settings()[0].oInit.scrollX);
+                console.log('  fixedColumns:', JSON.stringify(tasksTable.settings()[0].oInit.fixedColumns));
+                console.log('  responsive:', tasksTable.settings()[0].oInit.responsive);
+                
+                console.log('\n%c📏 2. TABLE DIMENSIONS', 'color: #ffa500; font-weight: bold');
+                const $table = $('#tasks-table');
+                const $wrapper = $('#tasks-table_wrapper');
+                const $scrollBody = $('.dataTables_scrollBody');
+                console.log('  Table width:', $table.width(), 'px');
+                console.log('  Wrapper width:', $wrapper.width(), 'px');
+                console.log('  Scroll body width:', $scrollBody.width(), 'px');
+                console.log('  Table layout:', window.getComputedStyle($table[0]).tableLayout);
+                
+                console.log('\n%c🎯 3. HEADER vs BODY ALIGNMENT', 'color: #ffa500; font-weight: bold');
+                const headers = $table.find('thead th');
+                const firstRow = $table.find('tbody tr:first');
+                const cells = firstRow.find('td');
+                
+                let totalMisalignment = 0;
+                let misalignedCols = 0;
+                
+                console.log('  Total columns:', headers.length);
+                console.table(
+                    Array.from(headers).map((header, index) => {
+                        const $header = $(header);
+                        const $cell = cells.eq(index);
+                        
+                        const headerWidth = $header.outerWidth();
+                        const cellWidth = $cell.outerWidth();
+                        const diff = Math.abs(headerWidth - cellWidth);
+                        
+                        if (diff > 2) {
+                            misalignedCols++;
+                            totalMisalignment += diff;
+                        }
+                        
+                        return {
+                            'Col': index,
+                            'Name': $header.text().trim().substring(0, 15),
+                            'Header': headerWidth + 'px',
+                            'Cell': cellWidth + 'px',
+                            'Diff': diff + 'px',
+                            'Status': diff > 2 ? '❌ MISALIGNED' : '✅ OK'
+                        };
+                    })
+                );
+                
+                console.log('\n%c📦 4. BOX MODEL ANALYSIS', 'color: #ffa500; font-weight: bold');
+                console.log('\n%c🔧 5.5. PADDING DETAILED CHECK', 'color: #ffa500; font-weight: bold');
+                headers.slice(0, 3).each(function(i) {
+                    const $h = $(this);
+                    const $c = cells.eq(i);
+                    const hStyle = window.getComputedStyle(this);
+                    const cStyle = window.getComputedStyle($c[0]);
+                    
+                    console.log(`  Col ${i} (${$h.text().trim()}):`);
+                    console.log(`    Header: padding=${hStyle.paddingLeft} ${hStyle.paddingRight}, width=${$h.outerWidth()}px`);
+                    console.log(`    Cell:   padding=${cStyle.paddingLeft} ${cStyle.paddingRight}, width=${$c.outerWidth()}px`);
+                    console.log(`    ❌ Padding match: ${hStyle.paddingLeft === cStyle.paddingLeft && hStyle.paddingRight === cStyle.paddingRight ? 'YES' : 'NO'}`);
+                });
+                const sampleHeader = headers.eq(1); // Tiêu đề column
+                const sampleCell = cells.eq(1);
+                
+                console.log('  Header box-sizing:', window.getComputedStyle(sampleHeader[0]).boxSizing);
+                console.log('  Cell box-sizing:', window.getComputedStyle(sampleCell[0]).boxSizing);
+                console.log('  Header padding:', window.getComputedStyle(sampleHeader[0]).padding);
+                console.log('  Cell padding:', window.getComputedStyle(sampleCell[0]).padding);
+                console.log('  Header border:', window.getComputedStyle(sampleHeader[0]).borderWidth);
+                console.log('  Cell border:', window.getComputedStyle(sampleCell[0]).borderWidth);
+                
+                console.log('\n%c🔒 5. FIXED COLUMNS STATUS', 'color: #ffa500; font-weight: bold');
+                const $fixedWrapper = $('.DTFC_LeftWrapper');
+                if ($fixedWrapper.length > 0) {
+                    console.log('  ✅ FixedColumns ENABLED');
+                    console.log('  Fixed wrapper width:', $fixedWrapper.width(), 'px');
+                    
+                    const fixedHeaders = $fixedWrapper.find('thead th');
+                    const fixedCells = $fixedWrapper.find('tbody tr:first td');
+                    
+                    console.table(
+                        Array.from(fixedHeaders).map((header, index) => {
+                            const $header = $(header);
+                            const $cell = fixedCells.eq(index);
+                            return {
+                                'Col': index,
+                                'Name': $header.text().trim(),
+                                'Header': $header.outerWidth() + 'px',
+                                'Cell': $cell.outerWidth() + 'px',
+                                'Diff': Math.abs($header.outerWidth() - $cell.outerWidth()) + 'px'
+                            };
+                        })
+                    );
+                } else {
+                    console.log('  ❌ FixedColumns DISABLED');
+                }
+                
+                console.log('\n%c🎨 6. SORTING ICONS IMPACT', 'color: #ffa500; font-weight: bold');
+                const sortableHeaders = $table.find('thead th.sorting, thead th.sorting_asc, thead th.sorting_desc');
+                console.log('  Sortable columns:', sortableHeaders.length);
+                sortableHeaders.slice(0, 3).each(function() {
+                    const $h = $(this);
+                    const style = window.getComputedStyle(this);
+                    console.log(`    ${$h.text().trim()}:`, {
+                        paddingRight: style.paddingRight,
+                        width: $h.outerWidth() + 'px'
+                    });
+                });
+                
+                console.log('\n%c📱 7. RESPONSIVE CHECK', 'color: #ffa500; font-weight: bold');
+                console.log('  Is mobile:', isMobile);
+                console.log('  Window width:', $(window).width(), 'px');
+                console.log('  FixedColumns enabled:', !isMobile);
+                console.log('  Viewport:', window.innerWidth + 'x' + window.innerHeight);
+                
+                console.log('\n%c📊 8. SUMMARY', 'color: #ff0000; font-weight: bold; font-size: 14px');
+                console.log(`  Total columns: ${headers.length}`);
+                console.log(`  Misaligned columns: ${misalignedCols}`);
+                console.log(`  Total misalignment: ${totalMisalignment.toFixed(0)}px`);
+                console.log(`  Average misalignment: ${misalignedCols > 0 ? (totalMisalignment / misalignedCols).toFixed(1) : 0}px`);
+                
+                if (misalignedCols === 0) {
+                    console.log('%c  ✅ ALL COLUMNS ALIGNED!', 'color: #00ff00; font-weight: bold');
+                } else {
+                    console.log(`%c  ❌ ${misalignedCols} COLUMNS NEED FIXING`, 'color: #ff0000; font-weight: bold');
+                    console.log('\n%c💡 SUGGESTED FIXES:', 'color: #ffa500; font-weight: bold');
+                    console.log('  1. Add explicit column widths in columnDefs');
+                    console.log('  2. Ensure consistent padding/border on headers and cells');
+                    console.log('  3. Check if sorting icons add extra width');
+                    console.log('  4. Consider calling tasksTable.columns.adjust()');
+                }
+                
+                console.log('\n%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━', 'color: #00ff00');
+                console.log('%c🔍 END ALIGNMENT ANALYSIS', 'color: #00ff00; font-weight: bold');
+                console.log('%c━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n', 'color: #00ff00');
+                
+            }, 1000); // Wait 1 second for full render
+        }
+        // ============================================================
+        // END DEBUG
+        // ============================================================
         
     } else {
         console.error('❌ tasks-table element not found!');
@@ -789,7 +1101,9 @@ $(document).ready(function() {
 
     // Initialize datetime pickers
     if (window.DateTimePicker && window.DateTimePicker.initializeDateTimePickers) {
-        console.log('  - Calling initializeDateTimePickers...');
+        if (DEBUG_PAGE_LOAD) {
+            console.log('  - Calling initializeDateTimePickers...');
+        }
         window.DateTimePicker.initializeDateTimePickers();
     } else {
         console.error('❌ DateTimePicker not available!');
