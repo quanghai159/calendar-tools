@@ -1,0 +1,168 @@
+/* Tasks List Page Styles - AdminLTE Version */
+
+/* DataTables AdminLTE Styling */
+#tasks-table_wrapper .dataTables_length,
+#tasks-table_wrapper .dataTables_filter {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+#tasks-table_wrapper .dataTables_length label,
+#tasks-table_wrapper .dataTables_filter label {
+    margin-bottom: 0;
+    font-weight: 500;
+}
+
+#tasks-table_wrapper .dataTables_length select {
+    margin: 0 5px;
+    padding: 5px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+#tasks-table_wrapper .dataTables_filter input {
+    margin-left: 10px;
+    padding: 5px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+#tasks-table_wrapper .dataTables_info {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+#tasks-table_wrapper .dataTables_paginate {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+#tasks-table_wrapper .dataTables_paginate .paginate_button {
+    padding: 5px 10px;
+    margin: 0 2px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background-color: white;
+    color: #007bff;
+}
+
+#tasks-table_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}
+
+#tasks-table_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Table Wrapper */
+.task-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    padding-bottom: 16px;
+}
+
+.task-table {
+    min-width: 1400px;
+    width: max-content;
+    margin-bottom: 0;
+}
+
+/* AdminLTE table header styling */
+.task-table thead th {
+    background-color: #343a40;
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid #495057;
+    padding: 0.75rem;
+}
+
+/* AdminLTE table striped rows */
+.task-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+
+.task-table tbody tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+/* AdminLTE table hover effect */
+.task-table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.task-table th,
+.task-table td {
+    white-space: nowrap;
+    vertical-align: middle;
+    padding: 0.75rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.task-table td[contenteditable="true"] {
+    vertical-align: middle;
+    cursor: text;
+}
+
+.task-table td[contenteditable="true"]:hover {
+    background-color: #fff3cd !important; /* Light yellow on hover for editable cells */
+}
+
+/* Save All Button Wrapper */
+.save-all-wrapper {
+    margin-top: 15px;
+    display: flex;
+    justify-content: center;
+    padding: 0 15px;
+}
+
+/* Row overflow fix */
+.row {
+    overflow-x: visible !important;
+    overflow-y: visible !important;
+}
+
+/* Fix header alignment với FixedColumns */
+#tasks-table_wrapper .DTFC_LeftWrapper table,
+#tasks-table_wrapper .DTFC_RightWrapper table {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+#tasks-table_wrapper .DTFC_LeftWrapper thead th,
+#tasks-table_wrapper .DTFC_RightWrapper thead th {
+    background-color: #343a40;
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid #495057;
+    padding: 0.75rem;
+    vertical-align: middle;
+}
+
+/* Đảm bảo fixed columns có cùng width với main table */
+#tasks-table_wrapper .DTFC_LeftWrapper table,
+#tasks-table_wrapper .DTFC_RightWrapper table {
+    width: 100% !important;
+}
+
+/* Fix cell alignment */
+#tasks-table_wrapper .DTFC_LeftWrapper td,
+#tasks-table_wrapper .DTFC_RightWrapper td {
+    padding: 0.75rem;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+/* Ensure main table and fixed columns have same cell heights */
+#tasks-table thead th,
+#tasks-table tbody td {
+    height: auto;
+    min-height: 38px;
+    box-sizing: border-box;
+}
+

@@ -1,0 +1,419 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Hunonic Marketing Tools - Nền tảng Marketing thông minh{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Trang chủ</li>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Hero Banner with Gradient */
+.hero-dashboard {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 40px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.hero-dashboard h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.hero-dashboard p {
+    font-size: 1.1rem;
+    opacity: 0.95;
+}
+
+/* Info Box Custom */
+.info-box-custom {
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+.info-box-custom:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 25px rgba(0,0,0,0.15);
+}
+
+/* Tool Card */
+.tool-card {
+    height: 100%;
+    transition: all 0.3s;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.tool-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.tool-card-header {
+    padding: 30px 20px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+}
+
+.tool-card-header.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.tool-card-header.coming-soon {
+    background: linear-gradient(135deg, #bdc3c7 0%, #95a5a6 100%);
+    color: white;
+    opacity: 0.7;
+}
+
+.tool-icon-large {
+    font-size: 4rem;
+    margin-bottom: 15px;
+}
+
+/* Timeline Custom */
+.timeline-custom {
+    padding-left: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Dashboard Banner -->
+<div class="hero-dashboard">
+    <div class="container-fluid">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1><i class="fas fa-rocket"></i> Chào mừng đến với Hunonic Marketing Tools</h1>
+                <p class="mb-3">Nền tảng tự động hóa Marketing toàn diện cho Đại lý & NPP Hunonic</p>
+                <a href="#tools" class="btn btn-light btn-lg">
+                    <i class="fas fa-play-circle"></i> Bắt đầu ngay
+                </a>
+            </div>
+            <div class="col-lg-4 text-center d-none d-lg-block">
+                <i class="fas fa-chart-line" style="font-size: 8rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Row -->
+<div class="row">
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info info-box-custom">
+            <div class="inner">
+                <h3>2</h3>
+                <p>Công cụ đang hoạt động</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-tools"></i>
+            </div>
+            <a href="#tools" class="small-box-footer">
+                Khám phá ngay <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success info-box-custom">
+            <div class="inner">
+                <h3>100<sup style="font-size: 20px">+</sup></h3>
+                <p>Đại lý đang sử dụng</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <a href="#about" class="small-box-footer">
+                Tìm hiểu thêm <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning info-box-custom">
+            <div class="inner">
+                <h3>5</h3>
+                <p>Công cụ sắp ra mắt</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <a href="#roadmap" class="small-box-footer">
+                Xem lộ trình <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-danger info-box-custom">
+            <div class="inner">
+                <h3>99.9<sup style="font-size: 20px">%</sup></h3>
+                <p>Uptime hệ thống</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-server"></i>
+            </div>
+            <a href="#" class="small-box-footer">
+                System Status <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Main Tools Section -->
+<div class="row" id="tools">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="fas fa-toolbox"></i> Bộ Công Cụ Marketing</h2>
+    </div>
+    
+    <!-- Calendar Tools - Active -->
+    <div class="col-lg-6 col-md-6">
+        <div class="card tool-card">
+            <div class="tool-card-header active">
+                <div class="tool-icon-large">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3>Calendar Tools</h3>
+                <span class="badge badge-light">Đang hoạt động</span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Quản lý lịch làm việc thông minh</h5>
+                <p class="card-text">
+                    Tạo và quản lý tác vụ với thông báo tự động qua Telegram, Email, Zalo. 
+                    Tích hợp Google Sheets, báo cáo chi tiết và nhiều tính năng mạnh mẽ khác.
+                </p>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-star text-warning"></i> Tính năng nổi bật:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> Thông báo đa kênh (Telegram/Email/Zalo)</li>
+                        <li><i class="fas fa-check text-success"></i> Tích hợp Google Sheets</li>
+                        <li><i class="fas fa-check text-success"></i> Báo cáo & Dashboard</li>
+                        <li><i class="fas fa-check text-success"></i> Quản lý team</li>
+                    </ul>
+                </div>
+                
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{{ url_for('calendar_tools_home') }}" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i> Truy cập ngay
+                    </a>
+                    <a href="{{ url_for('view_tasks') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-eye"></i> Xem demo
+                    </a>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small><i class="fas fa-users"></i> 80+ người dùng đang hoạt động</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Banner Automation - Active -->
+    <div class="col-lg-6 col-md-6">
+        <div class="card tool-card">
+            <div class="tool-card-header active" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                <div class="tool-icon-large">
+                    <i class="fas fa-magic"></i>
+                </div>
+                <h3>Banner Automation</h3>
+                <span class="badge badge-light">Đang hoạt động</span>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Tự động hóa thiết kế Banner</h5>
+                <p class="card-text">
+                    Tạo hàng loạt banner marketing chất lượng cao với template có sẵn. 
+                    Tùy chỉnh nội dung, màu sắc, logo và xuất file batch processing nhanh chóng.
+                </p>
+                
+                <div class="mb-3">
+                    <h6><i class="fas fa-star text-warning"></i> Tính năng nổi bật:</h6>
+                    <ul class="list-unstyled">
+                        <li><i class="fas fa-check text-success"></i> 50+ Template chuyên nghiệp</li>
+                        <li><i class="fas fa-check text-success"></i> Tùy chỉnh linh hoạt</li>
+                        <li><i class="fas fa-check text-success"></i> Xuất file HD/4K</li>
+                        <li><i class="fas fa-check text-success"></i> Batch processing</li>
+                    </ul>
+                </div>
+                
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="https://github.com/quanghai159/hunonic-banner-tools" target="_blank" class="btn btn-danger">
+                        <i class="fas fa-external-link-alt"></i> Truy cập tool
+                    </a>
+                    <button class="btn btn-outline-danger" disabled>
+                        <i class="fas fa-file-pdf"></i> Hướng dẫn
+                    </button>
+                </div>
+            </div>
+            <div class="card-footer text-muted">
+                <small><i class="fas fa-users"></i> 30+ người dùng đang hoạt động</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Coming Soon Tools -->
+<div class="row mt-4">
+    <div class="col-12">
+        <h3 class="mb-4"><i class="fas fa-rocket"></i> Sắp ra mắt</h3>
+    </div>
+    
+    <div class="col-lg-4 col-md-6">
+        <div class="card tool-card">
+            <div class="tool-card-header coming-soon">
+                <div class="tool-icon-large">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <h4>Analytics Dashboard</h4>
+                <span class="badge badge-light">Q1 2026</span>
+            </div>
+            <div class="card-body">
+                <p>Dashboard phân tích dữ liệu marketing real-time với AI insights thông minh.</p>
+                <button class="btn btn-secondary btn-block" disabled>
+                    <i class="fas fa-clock"></i> Đang phát triển
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-6">
+        <div class="card tool-card">
+            <div class="tool-card-header coming-soon">
+                <div class="tool-icon-large">
+                    <i class="fas fa-envelope-open-text"></i>
+                </div>
+                <h4>Email Marketing Suite</h4>
+                <span class="badge badge-light">Q2 2026</span>
+            </div>
+            <div class="card-body">
+                <p>Gửi email marketing hàng loạt với template đẹp và tracking chi tiết.</p>
+                <button class="btn btn-secondary btn-block" disabled>
+                    <i class="fas fa-clock"></i> Đang phát triển
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4 col-md-6">
+        <div class="card tool-card">
+            <div class="tool-card-header coming-soon">
+                <div class="tool-icon-large">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h4>AI Content Generator</h4>
+                <span class="badge badge-light">Q3 2026</span>
+            </div>
+            <div class="card-body">
+                <p>Tạo nội dung marketing tự động với công nghệ AI tiên tiến.</p>
+                <button class="btn btn-secondary btn-block" disabled>
+                    <i class="fas fa-clock"></i> Đang phát triển
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Why Choose Us -->
+<div class="row mt-5" id="about">
+    <div class="col-lg-8">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-question-circle"></i> Tại sao chọn Hunonic Marketing Tools?
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-success"><i class="fas fa-check-double"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Thiết kế riêng cho Hunonic</span>
+                                <span class="info-box-number">100% tùy chỉnh</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-info"><i class="fas fa-bolt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Nhanh chóng & Hiệu quả</span>
+                                <span class="info-box-number">Tiết kiệm 80% thời gian</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-warning"><i class="fas fa-headset"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Hỗ trợ 24/7</span>
+                                <span class="info-box-number">Đội ngũ chuyên nghiệp</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-box bg-light">
+                            <span class="info-box-icon bg-danger"><i class="fas fa-shield-alt"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Bảo mật tối đa</span>
+                                <span class="info-box-number">SSL & Encryption</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card card-widget widget-user">
+            <div class="widget-user-header bg-info">
+                <h3 class="widget-user-username">Hunonic Team</h3>
+                <h5 class="widget-user-desc">Marketing Innovation</h5>
+            </div>
+            <div class="widget-user-image">
+                <i class="fas fa-users-cog" style="font-size: 4rem; color: #17a2b8;"></i>
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col-sm-6 border-right">
+                        <div class="description-block">
+                            <h5 class="description-header">3+</h5>
+                            <span class="description-text">NĂM KINH NGHIỆM</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="description-block">
+                            <h5 class="description-header">100+</h5>
+                            <span class="description-text">KHÁCH HÀNG</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CTA Banner -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="callout callout-info" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+            <h4><i class="fas fa-rocket"></i> Sẵn sàng tăng tốc Marketing?</h4>
+            <p>Tham gia cùng 100+ Đại lý & NPP Hunonic đang sử dụng bộ công cụ này để tối ưu hiệu quả công việc!</p>
+            <div class="mt-3">
+                <a href="{{ url_for('calendar_tools_home') }}" class="btn btn-light btn-lg mr-2">
+                    <i class="fas fa-play-circle"></i> Bắt đầu với Calendar Tools
+                </a>
+                <a href="https://github.com/quanghai159/hunonic-banner-tools" target="_blank" class="btn btn-outline-light btn-lg">
+                    <i class="fas fa-magic"></i> Thử Banner Automation
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

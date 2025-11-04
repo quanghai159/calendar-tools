@@ -1,0 +1,151 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Chi Tiết Tác Vụ - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-eye"></i> Chi Tiết Tác Vụ
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('view_tasks') }}">Quản lý Tác vụ</a></li>
+    <li class="breadcrumb-item active">Chi tiết</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-list"></i> {{ task.title }}
+                </h3>
+                <div class="card-tools">
+                    <a href="{{ url_for('view_tasks') }}" class="btn btn-tool">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card card-outline card-info">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-info-circle"></i> Thông Tin Cơ Bản
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Mô tả:</dt>
+                                    <dd class="col-sm-8">{{ task.description or 'Không có mô tả' }}</dd>
+                                    
+                                    <dt class="col-sm-4">Loại:</dt>
+                                    <dd class="col-sm-8">
+                                        <span class="badge badge-info">{{ task.category or 'N/A' }}</span>
+                                    </dd>
+                                    
+                                    <dt class="col-sm-4">Ưu tiên:</dt>
+                                    <dd class="col-sm-8">
+                                        {% if task.priority == 'high' %}
+                                        <span class="badge badge-danger">CAO</span>
+                                        {% elif task.priority == 'medium' %}
+                                        <span class="badge badge-warning">TRUNG BÌNH</span>
+                                        {% elif task.priority == 'low' %}
+                                        <span class="badge badge-success">THẤP</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">{{ task.priority|upper }}</span>
+                                        {% endif %}
+                                    </dd>
+                                    
+                                    <dt class="col-sm-4">Trạng thái:</dt>
+                                    <dd class="col-sm-8">
+                                        {% if task.status == 'completed' %}
+                                        <span class="badge badge-success">HOÀN THÀNH</span>
+                                        {% elif task.status == 'in progress' %}
+                                        <span class="badge badge-info">ĐANG LÀM</span>
+                                        {% elif task.status == 'pending' %}
+                                        <span class="badge badge-warning">CHỜ XỬ LÝ</span>
+                                        {% else %}
+                                        <span class="badge badge-secondary">{{ task.status|upper }}</span>
+                                        {% endif %}
+                                    </dd>
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card card-outline card-success">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-clock"></i> Thời Gian
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-4">Bắt đầu:</dt>
+                                    <dd class="col-sm-8">{{ task.start_date or 'N/A' }}</dd>
+                                    
+                                    <dt class="col-sm-4">Kết thúc:</dt>
+                                    <dd class="col-sm-8">{{ task.end_date or 'N/A' }}</dd>
+                                    
+                                    <dt class="col-sm-4">Deadline:</dt>
+                                    <dd class="col-sm-8">
+                                        <strong class="text-danger">{{ task.deadline or 'N/A' }}</strong>
+                                    </dd>
+                                    
+                                    {% if task.notification_time %}
+                                    <dt class="col-sm-4">Thông báo:</dt>
+                                    <dd class="col-sm-8">{{ task.notification_time }}</dd>
+                                    {% endif %}
+                                </dl>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card card-outline card-warning">
+                            <div class="card-header">
+                                <h3 class="card-title">
+                                    <i class="fas fa-cogs"></i> Thao Tác
+                                </h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="btn-group" role="group">
+                                    <a href="{{ url_for('test_notification', task_id=task.task_id) }}" class="btn btn-info">
+                                        <i class="fas fa-paper-plane"></i> Test Thông Báo
+                                    </a>
+                                    
+                                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.task_id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="in progress">
+                                        <button type="submit" class="btn btn-warning">
+                                            <i class="fas fa-clock"></i> Đang Làm
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.task_id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="completed">
+                                        <button type="submit" class="btn btn-success">
+                                            <i class="fas fa-check"></i> Hoàn Thành
+                                        </button>
+                                    </form>
+                                    
+                                    <form method="POST" action="{{ url_for('update_task_status', task_id=task.task_id) }}" class="d-inline">
+                                        <input type="hidden" name="status" value="cancelled">
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-times"></i> Hủy Bỏ
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Hunonic Marketing Tools{% endblock %}</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Font: Source Sans Pro -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+    
+    <!-- AdminLTE 3 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    
+    <!-- jQuery (required for AdminLTE) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- DataTables CSS - Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+
+    <!-- Hunonic Custom CSS -->
+    <link href="{{ url_for('static', filename='css/adminlte-custom.css') }}" rel="stylesheet">
+    
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <!-- Left navbar links -->
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="{{ url_for('index') }}" class="nav-link">Trang chủ</a>
+            </li>
+        </ul>
+
+        <!-- Right navbar links -->
+        <ul class="navbar-nav ml-auto">
+            {% if session.user_id %}
+            <li class="nav-item dropdown">
+                <a class="nav-link" data-bs-toggle="dropdown" href="#">
+                    <i class="far fa-user"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-end">
+                    <a href="{{ url_for('profile_settings') }}" class="dropdown-item">
+                        <i class="fas fa-user-cog mr-2"></i> Cài đặt cá nhân
+                    </a>
+                    {% if is_admin() %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('admin_list_users') }}" class="dropdown-item">
+                        <i class="fas fa-users-cog mr-2"></i> Quản trị User
+                    </a>
+                    <a href="{{ url_for('admin_list_groups') }}" class="dropdown-item">
+                        <i class="fas fa-users mr-2"></i> Quản trị Nhóm
+                    </a>
+                    {% endif %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ url_for('logout') }}" class="dropdown-item dropdown-footer">
+                        <i class="fas fa-sign-out-alt mr-2"></i> Đăng xuất
+                    </a>
+                </div>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <a href="{{ url_for('login') }}" class="nav-link">Đăng nhập</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- Main Sidebar Container -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <!-- Brand Logo -->
+        <a href="{{ url_for('index') }}" class="brand-link">
+            <span class="brand-image img-circle elevation-3" style="
+                display: inline-block;
+                width: 33px;
+                height: 33px;
+                background: linear-gradient(135deg, #01af32, #4ecb71);
+                border-radius: 50%;
+                text-align: center;
+                line-height: 33px;
+                color: white;
+                font-weight: bold;
+                margin-right: 8px;
+            ">H</span>
+            <span class="brand-text font-weight-light">Hunonic Marketing</span>
+        </a>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Sidebar Menu -->
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <!-- Trang chủ -->
+                    <li class="nav-item">
+                        <a href="{{ url_for('index') }}" class="nav-link {% if request.endpoint == 'index' %}active{% endif %}">
+                            <i class="nav-icon fas fa-home"></i>
+                            <p>Trang chủ</p>
+                        </a>
+                    </li>
+                    
+                    <!-- Dynamic Tools Menu (skip calendar-tools vì đã có submenu riêng) -->
+                    {% for tool in available_tools %}
+                        {% if tool.id != 'calendar-tools' %}
+                        <li class="nav-item">
+                            <a href="{{ tool.url }}" class="nav-link {% if request.endpoint and tool.id in request.endpoint %}active{% endif %}">
+                                <i class="nav-icon {{ tool.icon }}"></i>
+                                <p>{{ tool.name }}</p>
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    <!-- Calendar Tools Submenu (manual for now) -->
+                    <li class="nav-item {% if request.endpoint in ['view_tasks', 'create_simple_task', 'calendar_tools_home'] %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if request.endpoint in ['view_tasks', 'create_simple_task', 'calendar_tools_home'] %}active{% endif %}">
+                            <i class="nav-icon fas fa-calendar-alt"></i>
+                            <p>
+                                Calendar Tools
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{{ url_for('calendar_tools_home') }}" class="nav-link {% if request.endpoint == 'calendar_tools_home' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Trang chủ</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('view_tasks') }}" class="nav-link {% if request.endpoint == 'view_tasks' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Quản lý Tác vụ</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{{ url_for('create_simple_task') }}" class="nav-link {% if request.endpoint == 'create_simple_task' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Tạo Tác vụ Mới</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content Wrapper -->
+    <div class="content-wrapper">
+        <!-- Content Header -->
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">{% block page_title %}Dashboard{% endblock %}</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            {% block breadcrumb %}
+                            <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+                            {% endblock %}
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <section class="content">
+            <div class="container-fluid">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                
+                {% block content %}{% endblock %}
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2025 <a href="#">Hunonic Marketing Tools</a>.</strong>
+        All rights reserved.
+    </footer>
+</div>
+
+<!-- Bootstrap 5 JS (compatible with AdminLTE 3.2) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE App -->
+<script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

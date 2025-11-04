@@ -1,0 +1,835 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Quản lý Tác vụ - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}Quản lý Tác vụ{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+<li class="breadcrumb-item active">Quản lý Tác vụ</li>
+{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/datetime-picker.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/tasks-page.css') }}" rel="stylesheet">
+<!-- DataTables FixedColumns CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/4.3.0/css/fixedColumns.bootstrap5.min.css">
+{% endblock %}
+
+{% block content %}
+<!-- Xóa phần Action Buttons ở đầu, chuyển vào card-tools -->
+<!-- Hoặc giữ lại nhưng dùng AdminLTE button group -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="btn-group" role="group" aria-label="Action buttons">
+            <a href="{{ url_for('create_simple_task') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Tạo Tác vụ Mới
+            </a>
+            <a href="{{ url_for('process_notifications') }}" class="btn btn-warning">
+                <i class="fas fa-bell"></i> Xử Lý Thông Báo
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tasks Table Card -->
+<div class="card card-primary card-outline">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-list"></i> Danh Sách Tác Vụ
+            <span class="badge bg-primary ms-2">{{ tasks|length }}</span>
+        </h3>
+        <div class="card-tools">
+            <a href="{{ url_for('create_simple_task') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Tạo mới
+            </a>
+        </div>
+    </div>
+    <!-- Sửa từ dòng 46-192 -->
+    <div class="card-body p-0">
+        {% if tasks %}
+        <div class="table-responsive task-table-wrapper">
+            <table id="tasks-table" class="table table-bordered table-hover table-striped task-table mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">STT</th>
+                        <th style="min-width: 200px;">Tiêu đề</th>
+                        <th style="min-width: 200px;">Mô tả</th>
+                        <th style="min-width: 180px;">Bắt đầu</th>
+                        <th style="min-width: 180px;">Kết thúc</th>
+                        <th style="min-width: 180px;">Deadline</th>
+                        <th style="min-width: 180px;">Ngày thông báo</th>
+                        <th style="min-width: 150px;">{{ notif_labels[0] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[1] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[2] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[3] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[4] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[5] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[6] }}</th>
+                        <th style="min-width: 150px;">{{ notif_labels[7] }}</th>
+                        <th style="min-width: 120px;">Trạng thái</th>
+                        <th style="min-width: 150px;">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in tasks %}
+                    {% set offsets = task_offsets.get(task.task_id, {}) %}
+                    <tr data-task-id="{{ task.task_id }}">
+                        <td>{{ loop.index }}</td>
+                        <td contenteditable="true">{{ task.title }}</td>
+                        <td contenteditable="true">{{ task.description }}</td>
+                        
+                        <!-- Datetime inputs với wrapper -->
+                        <td>
+                            <div class="datetime-input-wrapper">
+                                <input type="datetime-local" 
+                                       class="form-control form-control-sm datetime-input" 
+                                       data-column="start_date"
+                                       {% if offsets.get('start_date') %}data-ref-offset="{{ offsets.get('start_date') }}"{% endif %}
+                                       value="{{ (task.start_date or '')|replace(' ', 'T') }}" 
+                                       placeholder="--/--/---- --:--"
+                                       readonly>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="datetime-input-wrapper">
+                                <input type="datetime-local" 
+                                       class="form-control form-control-sm datetime-input" 
+                                       data-column="end_date"
+                                       {% if offsets.get('end_date') %}data-ref-offset="{{ offsets.get('end_date') }}"{% endif %}
+                                       value="{{ (task.end_date or '')|replace(' ', 'T') }}" 
+                                       placeholder="--/--/---- --:--"
+                                       readonly>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="datetime-input-wrapper">
+                                <input type="datetime-local" 
+                                       class="form-control form-control-sm datetime-input" 
+                                       data-column="deadline"
+                                       {% if offsets.get('deadline') %}data-ref-offset="{{ offsets.get('deadline') }}"{% endif %}
+                                       value="{{ (task.deadline or '')|replace(' ', 'T') }}" 
+                                       placeholder="--/--/---- --:--"
+                                       readonly>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="datetime-input-wrapper">
+                                <input type="datetime-local" 
+                                       class="form-control form-control-sm datetime-input" 
+                                       data-column="notification_time"
+                                       {% if offsets.get('notification_time') %}data-ref-offset="{{ offsets.get('notification_time') }}"{% endif %}
+                                       value="{{ (task.notification_time or '')|replace(' ', 'T') }}" 
+                                       placeholder="--/--/---- --:--"
+                                       readonly>
+                            </div>
+                        </td>
+                        
+                        <!-- Notif1-8 -->
+                        {% for i in range(1, 9) %}
+                        <td>
+                            <div class="datetime-input-wrapper">
+                                <input type="datetime-local" 
+                                       class="form-control form-control-sm datetime-input" 
+                                       data-column="notif{{ i }}"
+                                       {% if offsets.get('notif' + i|string) %}data-ref-offset="{{ offsets.get('notif' + i|string) }}"{% endif %}
+                                       value="{{ (task['notif' + i|string] or '')|replace(' ', 'T') }}" 
+                                       placeholder="--/--/---- --:--"
+                                       readonly>
+                            </div>
+                        </td>
+                        {% endfor %}
+                        
+                        <!-- Status -->
+                        <td>
+                            <select class="form-control form-control-sm" onchange="updateStatus(this, '{{ task.task_id }}')">
+                                <option value="pending" {% if task.status == 'pending' %}selected{% endif %}>Chờ xử lý</option>
+                                <option value="in_progress" {% if task.status == 'in_progress' %}selected{% endif %}>Đang làm</option>
+                                <option value="completed" {% if task.status == 'completed' %}selected{% endif %}>Hoàn thành</option>
+                                <option value="cancelled" {% if task.status == 'cancelled' %}selected{% endif %}>Đã hủy</option>
+                            </select>
+                        </td>
+                        
+                        <!-- Actions -->
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-info btn-sm" onclick="testTask(this)" title="Test thông báo">
+                                    <i class="fas fa-bell"></i>
+                                </button>
+                                <button class="btn btn-outline-info btn-sm" onclick="duplicateRow(this)" title="Nhân bản">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="deleteRow(this)" title="Xóa">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Di chuyển button ra đây -->
+        <div class="card-footer">
+            <button class="btn btn-primary btn-sm" onclick="addNewTaskRow()">
+                <i class="fas fa-plus"></i> Tạo tác vụ mới
+            </button>
+        </div>
+        
+        <!-- Save All Button Wrapper -->
+        <div class="save-all-wrapper" id="saveAllWrapper"></div>
+        
+        {% else %}
+        <div class="callout callout-info">
+            <h5><i class="icon fas fa-info-circle"></i> Chưa có tác vụ</h5>
+            <p>Bạn chưa có tác vụ nào. <a href="{{ url_for('create_simple_task') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Tạo tác vụ mới
+            </a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- DataTables FixedColumns JS -->
+<script src="https://cdn.datatables.net/fixedcolumns/4.3.0/js/dataTables.fixedColumns.min.js"></script>
+
+<!-- Load existing JS modules -->
+<script src="{{ url_for('static', filename='js/datetime-picker.js') }}"></script>
+<script src="{{ url_for('static', filename='js/datetime-copy-paste.js') }}"></script>
+<script src="{{ url_for('static', filename='js/task-actions.js') }}"></script>
+
+<script>
+// Helper function để hiển thị flash messages - AdminLTE style
+window.showFlash = function(message, type) {
+    type = type || 'info';
+    const alertClass = type === 'error' ? 'danger' : type;
+    const icon = type === 'error' ? 'exclamation-triangle' : 
+                 type === 'success' ? 'check-circle' : 'info-circle';
+    
+    const alertHtml = `
+        <div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+            <i class="fas fa-${icon} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    `;
+    
+    // Insert vào đầu content wrapper
+    const contentWrapper = document.querySelector('.content');
+    if (contentWrapper) {
+        contentWrapper.insertAdjacentHTML('afterbegin', alertHtml);
+        
+        // Auto-hide sau 5 giây
+        setTimeout(() => {
+            const alert = contentWrapper.querySelector('.alert');
+            if (alert) {
+                // Dùng Bootstrap 5 dismiss
+                const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                bsAlert.close();
+            }
+        }, 5000);
+    } else {
+        // Fallback: dùng alert nếu không tìm thấy content wrapper
+        alert(message);
+    }
+};
+
+// Get row data helper
+function getRowData(btn) {
+    const tr = btn.closest('tr');
+    const tds = tr.querySelectorAll('td');
+    return {
+        tr,
+        task_id: tr.getAttribute('data-task-id') || '',
+        title: tds[1].innerText.trim(),
+        description: tds[2].innerText.trim(),
+        start_date: tds[3].querySelector('.datetime-input')?.value || '',
+        end_date: tds[4].querySelector('.datetime-input')?.value || '',
+        deadline: tds[5].querySelector('.datetime-input')?.value || '',
+        notification_time: tds[6].querySelector('.datetime-input')?.value || '',
+        notif1: tds[7].querySelector('.datetime-input')?.value || '',
+        notif2: tds[8].querySelector('.datetime-input')?.value || '',
+        notif3: tds[9].querySelector('.datetime-input')?.value || '',
+        notif4: tds[10].querySelector('.datetime-input')?.value || '',
+        notif5: tds[11].querySelector('.datetime-input')?.value || '',
+        notif6: tds[12].querySelector('.datetime-input')?.value || '',
+        notif7: tds[13].querySelector('.datetime-input')?.value || '',
+        notif8: tds[14].querySelector('.datetime-input')?.value || '',
+        status: tds[15].querySelector('select')?.value || 'pending'
+    };
+}
+
+// Save row function
+function saveRow(btn) {
+    const data = getRowData(btn);
+    // ✅ FIX: Kiểm tra cả "NEW" và empty string
+    const isNew = !data.task_id || data.task_id === 'NEW' || data.task_id === '';
+    const url = isNew ? '/api/task' : `/api/task/${data.task_id}`;
+    
+    console.log('🔍 DEBUG saveRow:', {
+        task_id: data.task_id,
+        isNew: isNew,
+        url: url
+    });
+
+    // Thu thập offsets
+    const offsets = {};
+    const allInputs = data.tr.querySelectorAll('.datetime-input');
+    allInputs.forEach(function(input) {
+        const column = input.getAttribute('data-column');
+        const offset = input.getAttribute('data-ref-offset');
+        if (offset) {
+            offsets[column] = offset;
+        }
+    });
+
+    const payload = {
+        title: data.title,
+        description: data.description,
+        start_date: data.start_date,
+        end_date: data.end_date,
+        deadline: data.deadline,
+        notification_time: data.notification_time,
+        notif1: data.notif1,
+        notif2: data.notif2,
+        notif3: data.notif3,
+        notif4: data.notif4,
+        notif5: data.notif5,
+        notif6: data.notif6,
+        notif7: data.notif7,
+        notif8: data.notif8,
+        status: data.status,
+        offsets: offsets
+    };
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(res => {
+        if (res.status === 'success') {
+            if (isNew && res.task_id) {
+                data.tr.setAttribute('data-task-id', res.task_id);
+            }
+            
+            // Remove dirty flag
+            data.tr.removeAttribute('data-dirty');
+            TaskActions.updateSaveAllButton();
+            
+            showFlash('Đã lưu thành công!', 'success');
+        } else {
+            showFlash('Lưu thất bại: ' + (res.message || 'Lỗi không xác định'), 'error');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error saving row:', error);
+        showFlash('Lỗi khi lưu: ' + error.message, 'error');
+    });
+}
+
+// Restore reference notes
+function restoreReferenceNotes(row) {
+    const datetimeInputs = row.querySelectorAll('.datetime-input');
+    
+    datetimeInputs.forEach(function(input) {
+        const offset = input.getAttribute('data-ref-offset');
+        
+        if (offset && window.DateTimePicker && window.DateTimePicker.showReferenceNote) {
+            window.DateTimePicker.showReferenceNote(input, offset);
+        }
+    });
+}
+
+// Restore all reference notes on page load
+function restoreAllReferenceNotes() {
+    const inputs = document.querySelectorAll('.datetime-input[data-ref-offset]');
+    
+    inputs.forEach(function(input) {
+        const offset = input.getAttribute('data-ref-offset');
+        if (offset && window.DateTimePicker && window.DateTimePicker.showReferenceNote) {
+            window.DateTimePicker.showReferenceNote(input, offset);
+        }
+    });
+}
+
+// Test task notification
+function testTask(btn) {
+    const { task_id } = getRowData(btn);
+    if (!task_id) {
+        showFlash('Bạn cần lưu để tạo task trước khi test.', 'error');
+        return;
+    }
+    
+    fetch(`/api/task/${task_id}/test_notification`, { method: 'POST' })
+        .then(r => r.json())
+        .then(res => {
+            showFlash(res.message || 'Đã gửi test', res.status || 'success');
+        })
+        .catch(() => {
+            showFlash('Lỗi test Telegram!', 'error');
+        });
+}
+
+// Delete row
+function deleteRow(btn) {
+    const { tr, task_id } = getRowData(btn);
+    if (!confirm('Bạn có chắc muốn xóa task này không?')) return;
+    
+    // ✅ FIX: Nếu là NEW hoặc empty, chỉ cần remove khỏi DOM
+    if (!task_id || task_id === 'NEW' || task_id.trim() === '') {
+        tr.remove();
+        if (window.TaskActions) {
+            window.TaskActions.updateSaveAllButton();
+        }
+        showFlash('Đã xóa task khỏi danh sách', 'success');
+        return;
+    }
+    
+    // Xóa từ server
+    fetch(`/api/task/${task_id}`, { method: 'DELETE' })
+        .then(r => r.json())
+        .then(res => {
+            if (res.status === 'success') {
+                tr.remove();
+                if (window.TaskActions) {
+                    window.TaskActions.updateSaveAllButton();
+                }
+                showFlash('Đã xóa task', 'success');
+            } else {
+                showFlash('Lỗi: ' + (res.message || 'Không thể xóa'), 'error');
+            }
+        })
+        .catch((error) => {
+            console.error('❌ Error deleting:', error);
+            showFlash('Lỗi kết nối khi xóa!', 'error');
+        });
+}
+
+// Add new task row - Updated for DataTables
+function addNewTaskRow() {
+    console.log('🔍 DEBUG addNewTaskRow: START');
+    
+    // ✅ FIX: Kiểm tra DataTable đã được khởi tạo chưa
+    if (!window.tasksDataTable) {
+        console.error('DataTable not initialized');
+        console.log('  - Checking if table exists:', $('#tasks-table').length);
+        console.log('  - window.tasksDataTable:', window.tasksDataTable);
+        
+        // Thử khởi tạo lại nếu table tồn tại
+        if ($('#tasks-table').length) {
+            console.log('  - Attempting to re-initialize DataTable...');
+            // Gọi lại initialization
+            $(document).ready(function() {
+                // Code initialization ở đây hoặc trigger lại
+            });
+            alert('Đang khởi tạo bảng... Vui lòng thử lại sau 1 giây.');
+            setTimeout(function() {
+                if (window.tasksDataTable) {
+                    addNewTaskRow();
+                } else {
+                    alert('Không thể khởi tạo bảng. Vui lòng refresh trang.');
+                }
+            }, 1000);
+        } else {
+            alert('Bảng chưa được khởi tạo. Vui lòng refresh trang.');
+        }
+        return;
+    }
+    
+    // Lấy số thứ tự mới (dựa trên số rows hiện tại trong DataTable)
+    const currentRows = window.tasksDataTable.rows().count();
+    const newIndex = currentRows + 1;
+    
+    console.log('  - Current rows:', currentRows);
+    console.log('  - New index:', newIndex);
+    
+    // Tạo array data cho DataTable (17 columns)
+    const rowData = [];
+    
+    // STT
+    rowData.push(newIndex);
+    
+    // Tiêu đề (editable)
+    rowData.push('');
+    
+    // Mô tả (editable)
+    rowData.push('');
+    
+    // Datetime columns: start_date, end_date, deadline, notification_time
+    rowData.push(''); // start_date
+    rowData.push(''); // end_date
+    rowData.push(''); // deadline
+    rowData.push(''); // notification_time
+    
+    // Notif1-8
+    for (let i = 1; i <= 8; i++) {
+        rowData.push('');
+    }
+    
+    // Status
+    rowData.push('pending');
+    
+    // Actions (empty, sẽ được render sau)
+    rowData.push('');
+    
+    // Thêm row vào DataTable
+    const rowNode = window.tasksDataTable.row.add(rowData).draw(false).node();
+
+    // ✅ FIX 2: Tính toán trang và chuyển đến trang chứa row mới
+    const pageLength = window.tasksDataTable.page.len();
+    const totalRows = window.tasksDataTable.rows().count(); // Bao gồm cả row mới
+    const lastPageIndex = Math.floor((totalRows - 1) / pageLength); // Index của trang cuối (0-based)
+
+    // Chuyển đến trang cuối
+    window.tasksDataTable.page(lastPageIndex).draw(false);
+    
+    // Set attributes cho row
+    rowNode.setAttribute('data-task-id', 'NEW');
+    rowNode.setAttribute('data-dirty', 'true');
+    
+    console.log('  - Row added to DataTable:', rowNode);
+    
+    // ✅ FIX: Lấy cells từ rowNode (không tạo mới)
+    const cells = rowNode.querySelectorAll('td');
+    console.log('  - Found cells:', cells.length);
+    
+    if (cells.length < 17) {
+        console.error('  ❌ Wrong number of cells:', cells.length);
+        return;
+    }
+    
+    // STT (cell 0)
+    cells[0].textContent = newIndex;
+    
+    // Tiêu đề (cell 1) - editable
+    cells[1].contentEditable = 'true';
+    cells[1].textContent = '';
+    
+    // Mô tả (cell 2) - editable
+    cells[2].contentEditable = 'true';
+    cells[2].textContent = '';
+    
+    // Datetime columns (cells 3-6)
+    const datetimeColumns = ['start_date', 'end_date', 'deadline', 'notification_time'];
+    datetimeColumns.forEach(function(column, idx) {
+        const cell = cells[3 + idx];
+        if (cell) {
+            cell.innerHTML = `
+                <div class="datetime-input-wrapper">
+                    <input type="datetime-local" 
+                           class="form-control form-control-sm datetime-input" 
+                           data-column="${column}"
+                           placeholder="--/--/---- --:--"
+                           readonly>
+                </div>
+            `;
+        }
+    });
+    
+    // Notif1-8 (cells 7-14)
+    for (let i = 1; i <= 8; i++) {
+        const cell = cells[6 + i];
+        if (cell) {
+            cell.innerHTML = `
+                <div class="datetime-input-wrapper">
+                    <input type="datetime-local" 
+                           class="form-control form-control-sm datetime-input" 
+                           data-column="notif${i}"
+                           placeholder="--/--/---- --:--"
+                           readonly>
+                </div>
+            `;
+        }
+    }
+    
+    // Status (cell 15)
+    if (cells[15]) {
+        cells[15].innerHTML = `
+            <select class="form-control form-control-sm" onchange="updateStatus(this, 'NEW')">
+                <option value="pending" selected>Chờ xử lý</option>
+                <option value="in_progress">Đang làm</option>
+                <option value="completed">Hoàn thành</option>
+                <option value="cancelled">Đã hủy</option>
+            </select>
+        `;
+    }
+    
+    // Actions (cell 16)
+    if (cells[16]) {
+        cells[16].innerHTML = `
+            <div class="btn-group btn-group-sm" role="group">
+                <button class="btn btn-info btn-sm" onclick="testTask(this)" title="Test thông báo" disabled>
+                    <i class="fas fa-bell"></i>
+                </button>
+                <button class="btn btn-outline-info btn-sm" onclick="duplicateRow(this)" title="Nhân bản" disabled>
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteRow(this)" title="Xóa">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+    }
+    
+    console.log('  - Cells updated');
+    
+    // Initialize datetime pickers cho row mới
+    setTimeout(function() {
+        console.log('  - Initializing datetime pickers...');
+        
+        // Tìm lại rowNode sau khi DataTables render
+        const updatedRowNode = document.querySelector(`tr[data-task-id="NEW"]:last-child`);
+        if (!updatedRowNode) {
+            console.error('  ❌ Cannot find new row node');
+            return;
+        }
+        
+        // Initialize cho row mới này
+        const newInputs = updatedRowNode.querySelectorAll('.datetime-input');
+        console.log(`  - Found ${newInputs.length} datetime inputs in new row`);
+        
+        if (window.DateTimePicker) {
+            // Initialize từng input trong row mới
+            newInputs.forEach(function(input) {
+                // Đảm bảo có wrapper
+                let wrapper = input.closest('.datetime-input-wrapper');
+                if (!wrapper) {
+                    wrapper = document.createElement('div');
+                    wrapper.className = 'datetime-input-wrapper';
+                    input.parentNode.insertBefore(wrapper, input);
+                    wrapper.appendChild(input);
+                }
+                
+                // Tạo popup và setup events
+                if (window.DateTimePicker.createPopupForInput) {
+                    window.DateTimePicker.createPopupForInput(input);
+                }
+                if (window.DateTimePicker.setupInputEvents) {
+                    window.DateTimePicker.setupInputEvents(input);
+                }
+            });
+        }
+        
+        if (window.DateTimeCopyPaste && window.DateTimeCopyPaste.initializeCopyPaste) {
+            window.DateTimeCopyPaste.initializeCopyPaste();
+        }
+        
+        console.log('  - DateTime pickers initialized');
+    }, 200);
+    
+    // Update save all button
+    if (window.TaskActions) {
+        window.TaskActions.updateSaveAllButton();
+    }
+    
+    // Scroll to new row
+    setTimeout(function() {
+        const newRow = document.querySelector(`tr[data-task-id="NEW"]:last-child`);
+        if (newRow) {
+            newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Highlight
+            const originalBg = newRow.style.backgroundColor;
+            newRow.style.transition = 'background-color 0.3s';
+            newRow.style.backgroundColor = '#fff3cd';
+            setTimeout(function() {
+                newRow.style.backgroundColor = originalBg;
+            }, 1000);
+        }
+    }, 300);
+    
+    showFlash('Đã thêm row mới. Vui lòng điền thông tin và lưu.', 'success');
+    console.log('🔍 DEBUG addNewTaskRow: COMPLETE');
+}
+
+// Expose function globally để onclick có thể gọi
+window.addNewTaskRow = addNewTaskRow;
+
+// Duplicate row
+function duplicateRow(btn) {
+    if (window.TaskActions && window.TaskActions.duplicateRow) {
+        window.TaskActions.duplicateRow(btn);
+    }
+}
+
+// Update status
+function updateStatus(select, taskId) {
+    if (taskId === 'NEW') {
+        // Mark row as dirty
+        const tr = select.closest('tr');
+        tr.setAttribute('data-dirty', 'true');
+        if (window.TaskActions) {
+            window.TaskActions.updateSaveAllButton();
+        }
+        return;
+    }
+    
+    fetch(`/api/task/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: select.value })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            showFlash('Đã cập nhật trạng thái', 'success');
+        }
+    })
+    .catch(() => {
+        showFlash('Lỗi cập nhật trạng thái', 'error');
+    });
+}
+
+// Initialize on page load
+$(document).ready(function() {
+    console.log('🔍 DEBUG: Page loaded, initializing datetime pickers...');
+    console.log('  - Found inputs:', document.querySelectorAll('.datetime-input').length);
+    console.log('  - DateTimePicker available:', typeof window.DateTimePicker !== 'undefined');
+
+    // Initialize DataTables cho tasks table
+    if ($('#tasks-table').length) {
+        // Detect screen width
+        const isMobile = window.innerWidth < 768;
+        
+        const tasksTable = $('#tasks-table').DataTable({
+            "scrollX": true,
+            "scrollCollapse": true,
+            // ✅ Chỉ enable FixedColumns khi KHÔNG phải mobile
+            "fixedColumns": isMobile ? false : {
+                leftColumns: 2
+            },
+            "responsive": false,
+            "lengthChange": true,
+            "autoWidth": false,
+            // ✅ FIX 3: Mặc định hiển thị 10 dòng
+            "pageLength": 10,
+            "lengthMenu": [[5, 10, 25, 50, 100, -1], [5, 10, 25, 50, 100, "Tất cả"]],
+            "order": [[0, "asc"]],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+            },
+            "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+                "<'row'<'col-sm-12'tr>>" +
+                "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            // ✅ FIX 4: Tắt live search, chỉ search khi enter hoặc click button
+            "searchDelay": 0, // Disable delay (we'll handle manually)
+            "drawCallback": function(settings) {
+                // Re-initialize datetime pickers sau khi DataTables redraw
+                if (window.DateTimePicker && window.DateTimePicker.initializeDateTimePickers) {
+                    window.DateTimePicker.initializeDateTimePickers();
+                }
+                if (window.DateTimeCopyPaste && window.DateTimeCopyPaste.initializeCopyPaste) {
+                    window.DateTimeCopyPaste.initializeCopyPaste();
+                }
+                restoreAllReferenceNotes();
+            },
+            "columnDefs": [
+                {
+                    "targets": [0, 1],
+                    "orderable": false
+                },
+                {
+                    "targets": 16,
+                    "orderable": false
+                }
+            ]
+        });
+        
+        // ✅ FIX 4: Custom search behavior - chỉ search khi Enter hoặc click button
+        const searchInput = $('#tasks-table_wrapper .dataTables_filter input');
+        let searchTimeout;
+        
+        // Disable default live search
+        searchInput.off('keyup.DT input.DT');
+        
+        // Tạo search button
+        const searchButton = $('<button type="button" class="btn btn-sm btn-primary ms-2" id="search-btn"><i class="fas fa-search"></i></button>');
+        searchInput.after(searchButton);
+        
+        // Function để thực hiện search
+        function performSearch() {
+            const searchValue = searchInput.val();
+            tasksTable.search(searchValue).draw();
+        }
+        
+        // Search khi click button
+        searchButton.on('click', function() {
+            performSearch();
+        });
+        
+        // Search khi nhấn Enter
+        searchInput.on('keypress', function(e) {
+            if (e.which === 13) { // Enter key
+                e.preventDefault();
+                performSearch();
+            }
+        });
+        
+        // Optional: Clear search khi xóa hết text
+        searchInput.on('input', function() {
+            if ($(this).val() === '') {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(function() {
+                    performSearch();
+                }, 300); // Auto search khi xóa hết (delay 300ms)
+            }
+        });
+        
+        // ✅ Store DataTable instance globally NGAY SAU KHI KHỞI TẠO
+        window.tasksDataTable = tasksTable;
+        console.log('✅ DataTable stored:', window.tasksDataTable !== undefined);
+        
+    } else {
+        console.error('❌ tasks-table element not found!');
+    }
+
+    // Initialize datetime pickers
+    if (window.DateTimePicker && window.DateTimePicker.initializeDateTimePickers) {
+        console.log('  - Calling initializeDateTimePickers...');
+        window.DateTimePicker.initializeDateTimePickers();
+    } else {
+        console.error('❌ DateTimePicker not available!');
+    }
+
+    // Initialize copy/paste
+    if (window.DateTimeCopyPaste && window.DateTimeCopyPaste.initializeCopyPaste) {
+        window.DateTimeCopyPaste.initializeCopyPaste();
+    }
+
+    // Initialize task actions và tạo Save All button
+    if (window.TaskActions) {
+        if (window.TaskActions.createSaveAllButton) {
+            window.TaskActions.createSaveAllButton();
+        }
+        if (window.TaskActions.updateSaveAllButton) {
+            window.TaskActions.updateSaveAllButton();
+        }
+    }
+
+    // Restore reference notes on page load
+    restoreAllReferenceNotes();
+    
+    // Track form changes for beforeunload warning
+    let formChanged = false;
+    const forms = document.querySelectorAll('form, .task-table');
+    forms.forEach(function(form) {
+        form.addEventListener('change', function() {
+            formChanged = true;
+        });
+    });
+    
+    window.addEventListener('beforeunload', function(e) {
+        const hasDirtyRows = document.querySelectorAll('[data-dirty="true"]').length > 0;
+        if (formChanged || hasDirtyRows) {
+            e.preventDefault();
+            e.returnValue = 'Bạn có thay đổi chưa lưu. Bạn có chắc muốn rời khỏi trang?';
+            return e.returnValue;
+        }
+    });
+}); // ✅ Đóng $(document).ready
+</script>
+{% endblock %}

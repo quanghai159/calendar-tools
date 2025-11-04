@@ -1,0 +1,185 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Tạo tác vụ mới - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-plus"></i> Tạo tác vụ mới
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('calendar_tools_home') }}">Calendar Tools</a></li>
+    <li class="breadcrumb-item active">Tạo tác vụ mới</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 offset-lg-1">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-plus"></i> Tạo tác vụ mới
+                </h3>
+            </div>
+            <form method="POST" action="/create_simple_task" class="needs-validation" novalidate>
+                <div class="card-body">
+                    <!-- Thông tin cơ bản -->
+                    <div class="callout callout-info">
+                        <h5><i class="icon fas fa-info-circle"></i> Thông tin cơ bản</h5>
+                        <p>Nhập thông tin cơ bản về tác vụ của bạn</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="title">
+                                    Tên tác vụ <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="title" name="title" required
+                                       placeholder="Nhập tên tác vụ...">
+                                <small class="form-text text-muted">Tên ngắn gọn, dễ hiểu cho tác vụ</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="description">Mô tả tác vụ</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                          placeholder="Mô tả chi tiết về tác vụ..."></textarea>
+                                <small class="form-text text-muted">Mô tả chi tiết, yêu cầu, ghi chú...</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thời gian -->
+                    <div class="callout callout-warning">
+                        <h5><i class="icon fas fa-clock"></i> Thời gian</h5>
+                        <p>Xác định thời gian bắt đầu, kết thúc và deadline</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="start_date">
+                                    Ngày bắt đầu <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local" class="form-control" id="start_date" name="start_date" required>
+                                <small class="form-text text-muted">Thời gian bắt đầu tác vụ</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="end_date">
+                                    Ngày kết thúc <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local" class="form-control" id="end_date" name="end_date" required>
+                                <small class="form-text text-muted">Thời gian kết thúc dự kiến</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="deadline">
+                                    Deadline <span class="text-danger">*</span>
+                                </label>
+                                <input type="datetime-local" class="form-control" id="deadline" name="deadline" required>
+                                <small class="form-text text-muted">Hạn chót hoàn thành</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Thông báo -->
+                    <div class="callout callout-success">
+                        <h5><i class="icon fas fa-bell"></i> Thông báo</h5>
+                        <p>Cấu hình thông báo và phân loại tác vụ</p>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="notification_time">Thời gian thông báo</label>
+                                <input type="datetime-local" class="form-control" id="notification_time" name="notification_time">
+                                <small class="form-text text-muted">Thời gian gửi thông báo nhắc nhở</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="category">Loại tác vụ</label>
+                                <select class="form-control select2" id="category" name="category" style="width: 100%;">
+                                    <option value="general">Chung</option>
+                                    <option value="work">Công việc</option>
+                                    <option value="personal">Cá nhân</option>
+                                    <option value="meeting">Họp</option>
+                                    <option value="deadline">Deadline</option>
+                                    <option value="other">Khác</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="priority">Mức độ ưu tiên</label>
+                                <select class="form-control select2" id="priority" name="priority" style="width: 100%;">
+                                    <option value="low">Thấp</option>
+                                    <option value="medium" selected>Trung bình</option>
+                                    <option value="high">Cao</option>
+                                    <option value="urgent">Khẩn cấp</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Tạo tác vụ
+                    </button>
+                    <a href="{{ url_for('view_tasks') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize Select2 (nếu có)
+    $(document).ready(function() {
+        if (typeof $.fn.select2 !== 'undefined') {
+            $('.select2').select2({
+                theme: 'bootstrap4'
+            });
+        }
+    });
+
+    // Auto-fill end_date when start_date changes
+    document.getElementById('start_date').addEventListener('change', function() {
+        const startDate = new Date(this.value);
+        const endDate = new Date(startDate.getTime() + 8 * 60 * 60 * 1000); // +8 hours
+        document.getElementById('end_date').value = endDate.toISOString().slice(0, 16);
+    });
+
+    // Auto-fill deadline when end_date changes
+    document.getElementById('end_date').addEventListener('change', function() {
+        const endDate = new Date(this.value);
+        const deadline = new Date(endDate.getTime() - 1 * 60 * 60 * 1000); // -1 hour
+        document.getElementById('deadline').value = deadline.toISOString().slice(0, 16);
+    });
+
+    // Auto-fill notification_time when deadline changes
+    document.getElementById('deadline').addEventListener('change', function() {
+        const deadline = new Date(this.value);
+        const notification = new Date(deadline.getTime() - 1 * 60 * 60 * 1000); // -1 hour
+        document.getElementById('notification_time').value = notification.toISOString().slice(0, 16);
+    });
+</script>
+{% endblock %}

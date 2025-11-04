@@ -1,0 +1,173 @@
+/* Calendar Tools Home Page Styles - AdminLTE Version */
+
+/* Hero Section */
+.ct-hero-section {
+    background: linear-gradient(135deg, #01af32 0%, #4ecb71 100%);
+    color: white;
+    padding: 60px 0;
+    margin-bottom: 30px;
+    border-radius: 10px;
+}
+
+.ct-hero-title {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.ct-hero-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    opacity: 0.95;
+}
+
+.ct-hero-description {
+    font-size: 1rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+/* Feature Cards */
+.ct-feature-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    height: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e9ecef;
+}
+
+.ct-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.ct-feature-icon {
+    font-size: 3rem;
+    color: #01af32;
+    margin-bottom: 20px;
+}
+
+.ct-feature-title {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.ct-feature-description {
+    color: #666;
+    line-height: 1.6;
+    font-size: 0.95rem;
+}
+
+/* Action Cards */
+.ct-action-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    height: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e9ecef;
+}
+
+.ct-action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.ct-action-icon {
+    font-size: 3rem;
+    color: #01af32;
+    margin-bottom: 20px;
+}
+
+.ct-action-title {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.ct-action-description {
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+}
+
+/* Stat Cards */
+.ct-stat-card {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: 1px solid #e9ecef;
+}
+
+.ct-stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+}
+
+.ct-stat-icon {
+    font-size: 2.5rem;
+    color: #01af32;
+    margin-bottom: 15px;
+}
+
+.ct-stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #01af32;
+    margin-bottom: 5px;
+}
+
+.ct-stat-label {
+    color: #666;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* CTA Card */
+.ct-cta-card {
+    background: linear-gradient(135deg, #01af32 0%, #4ecb71 100%);
+    color: white;
+    padding: 50px 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.ct-cta-title {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.ct-cta-description {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    opacity: 0.95;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ct-hero-title {
+        font-size: 2rem;
+    }
+    
+    .ct-hero-subtitle {
+        font-size: 1.1rem;
+    }
+    
+    .ct-feature-card,
+    .ct-action-card {
+        margin-bottom: 20px;
+    }
+}

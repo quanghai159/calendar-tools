@@ -1,0 +1,56 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Cấp Tool cho User - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-toolbox"></i> Cấp Tool cho User: <code>{{ user_id }}</code>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_list_users') }}">Quản trị User</a></li>
+    <li class="breadcrumb-item active">Cấp Tool</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-tools"></i> Tool Access cho User
+                </h3>
+            </div>
+            <form method="post">
+                <div class="card-body">
+                    <div class="row">
+                        {% for t in tools %}
+                        <div class="col-md-4 col-lg-3">
+                            <div class="custom-control custom-checkbox mb-3">
+                                <input class="custom-control-input" type="checkbox" 
+                                       name="tools" id="tool-{{ t.tool_id }}" 
+                                       value="{{ t.tool_id }}"
+                                       {% if t.tool_id in has_tools %}checked{% endif %}>
+                                <label class="custom-control-label" for="tool-{{ t.tool_id }}">
+                                    <strong>{{ t.tool_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ t.tool_id }}</small>
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Lưu Tool Access
+                    </button>
+                    <a href="{{ url_for('admin_list_users') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

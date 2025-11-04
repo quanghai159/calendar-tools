@@ -1,0 +1,89 @@
+/* Hunonic Branding for AdminLTE */
+:root {
+    --hunonic-primary: #01af32;
+    --hunonic-primary-dark: #018a28;
+    --hunonic-primary-light: #4ecb71;
+    --hunonic-secondary: #ff6b35;
+    --hunonic-secondary-dark: #e55a2b;
+}
+
+/* Navbar Branding */
+.navbar-primary {
+    background-color: var(--hunonic-primary) !important;
+}
+
+/* ✅ FIX: Dropdown menu positioning - không overflow sang phải */
+.navbar-nav .dropdown-menu {
+    right: 0 !important;
+    left: auto !important;
+    transform: none !important;
+}
+
+/* ✅ FIX: Đảm bảo dropdown menu không bị overflow trên mobile */
+@media (max-width: 576px) {
+    .navbar-nav .dropdown-menu {
+        right: 0 !important;
+        left: auto !important;
+        width: auto;
+        min-width: 200px;
+        max-width: calc(100vw - 20px);
+    }
+}
+
+/* ✅ FIX: Dropdown menu end - căn về bên phải nhưng không overflow */
+.navbar-nav .dropdown-menu.dropdown-menu-end {
+    right: 0 !important;
+    left: auto !important;
+}
+
+/* ✅ FIX: Đảm bảo dropdown toggle button không bị overflow */
+.navbar-nav .nav-item.dropdown {
+    position: relative;
+}
+
+/* Sidebar Active State */
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: var(--hunonic-primary);
+    color: #fff;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link:hover {
+    background-color: rgba(1, 175, 50, 0.1);
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--hunonic-primary);
+    border-color: var(--hunonic-primary-dark);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--hunonic-primary-dark);
+    border-color: var(--hunonic-primary-dark);
+}
+
+/* Badges & Backgrounds */
+.bg-primary {
+    background-color: var(--hunonic-primary) !important;
+}
+
+.badge-primary {
+    background-color: var(--hunonic-primary);
+}
+
+/* Brand Logo */
+.brand-link {
+    background-color: var(--hunonic-primary);
+}
+
+.brand-link:hover {
+    background-color: var(--hunonic-primary-dark);
+}
+
+/* Footer */
+.main-footer {
+    background-color: #fff;
+    border-top: 1px solid #dee2e6;
+}

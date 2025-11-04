@@ -50,72 +50,179 @@ const COLUMN_ORDER = [
  * Initialize tất cả datetime inputs khi page load
  */
 function initializeDateTimePickers() {
+    console.log('🔍 DEBUG initializeDateTimePickers: START');
     const datetimeInputs = document.querySelectorAll('.datetime-input');
+    console.log(`  - Found ${datetimeInputs.length} datetime inputs`);
     
-    datetimeInputs.forEach(function(input) {
+    if (datetimeInputs.length === 0) {
+        console.warn('⚠️ No datetime inputs found!');
+        return;
+    }
+    
+    datetimeInputs.forEach(function(input, index) {
+        console.log(`  - Processing input ${index + 1}:`, {
+            element: input,
+            value: input.value,
+            readonly: input.hasAttribute('readonly'),
+            wrapper: input.closest('.datetime-input-wrapper'),
+            hasPopup: !!input.closest('.datetime-input-wrapper')?.querySelector('.datetime-popup')
+        });
+        
         // Tạo popup nếu chưa có
-        if (!input.closest('.datetime-input-wrapper')?.querySelector('.datetime-popup')) {
+        const wrapper = input.closest('.datetime-input-wrapper');
+        if (!wrapper) {
+            console.error(`  ❌ Input ${index + 1} has no wrapper!`);
+            return;
+        }
+        
+        if (!wrapper.querySelector('.datetime-popup')) {
+            console.log(`  - Creating popup for input ${index + 1}...`);
             createPopupForInput(input);
+        } else {
+            console.log(`  - Input ${index + 1} already has popup`);
         }
         
         // Setup event listeners
+        console.log(`  - Setting up events for input ${index + 1}...`);
         setupInputEvents(input);
     });
+    
+    console.log('🔍 DEBUG initializeDateTimePickers: COMPLETE');
 }
 
 /**
  * Setup event listeners cho input
  */
 function setupInputEvents(input) {
-    // Click vào input → Tự động set Now (nếu rỗng) → Mở popup
-    input.addEventListener('click', function(e) {
-        e.preventDefault();
-        handleInputClick(this);
-    });
+    console.log('🔍 DEBUG setupInputEvents: START');
+    console.log('  - Input:', input);
+    console.log('  - Input class:', input.className);
+    console.log('  - Input readonly:', input.hasAttribute('readonly'));
+    console.log('  - Input type:', input.type);
     
-    // Focus → Tự động set Now (nếu rỗng) → Mở popup
-    input.addEventListener('focus', function(e) {
+    const wrapper = input.closest('.datetime-input-wrapper');
+    if (!wrapper) {
+        console.error('❌ No wrapper found for input in setupInputEvents');
+        return;
+    }
+    
+    console.log('  - Wrapper found:', wrapper);
+    
+    // Tạo popup nếu chưa có
+    if (!wrapper.querySelector('.datetime-popup')) {
+        console.log('  - Creating popup...');
+        createPopupForInput(input);
+    } else {
+        console.log('  - Popup already exists');
+    }
+    
+    // Remove old listeners bằng cách tạo một input mới
+    console.log('  - Adding event listeners...');
+    
+    // Click event
+    input.addEventListener('click', function(e) {
+        console.log('🔍 DEBUG: Input clicked event fired');
+        console.log('  - Event:', e);
+        console.log('  - Target:', e.target);
+        console.log('  - Current target:', e.currentTarget);
         e.preventDefault();
+        e.stopPropagation();
         handleInputClick(this);
-    });
+    }, true);
+    
+    input.addEventListener('mousedown', function(e) {
+        console.log('🔍 DEBUG: Input mousedown event fired');
+        e.preventDefault();
+        e.stopPropagation();
+        handleInputClick(this);
+    }, true);
+    
+    // Touch events cho mobile
+    input.addEventListener('touchstart', function(e) {
+        console.log('🔍 DEBUG: Input touchstart event fired');
+        e.preventDefault();
+        e.stopPropagation();
+        handleInputClick(this);
+    }, true);
+    
+    // Focus event
+    input.addEventListener('focus', function(e) {
+        console.log('🔍 DEBUG: Input focus event fired');
+        e.preventDefault();
+        e.stopPropagation();
+        handleInputClick(this);
+    }, true);
+    
+    // Thêm double-click để test
+    input.addEventListener('dblclick', function(e) {
+        console.log('🔍 DEBUG: Input double-click event fired');
+        e.preventDefault();
+        e.stopPropagation();
+        handleInputClick(this);
+    }, true);
+    
+    console.log('🔍 DEBUG setupInputEvents: COMPLETE');
 }
 
 /**
  * Xử lý khi click vào input
  */
 function handleInputClick(input) {
+    console.log('🔍 DEBUG handleInputClick: START');
+    console.log('  - Input:', input);
+    console.log('  - Input value:', input.value);
+    console.log('  - Input readonly:', input.hasAttribute('readonly'));
+    console.log('  - Input disabled:', input.disabled);
+    console.log('  - Input style pointer-events:', getComputedStyle(input).pointerEvents);
+    console.log('  - Input parent:', input.parentElement);
+    console.log('  - Input wrapper:', input.closest('.datetime-input-wrapper'));
+    
     // Nếu input chưa có giá trị → Tự động set = Now
     if (!input.value || input.value.trim() === '') {
+        console.log('  - Input is empty, setting to Now...');
         const now = new Date();
-        const nowStr = formatLocalDateTime(now); // Dùng formatLocalDateTime thay vì toISOString
+        const nowStr = formatLocalDateTime(now);
         input.value = nowStr;
+        console.log('  - Set value to:', nowStr);
     }
     
+    console.log('  - Calling openPopup...');
     openPopup(input);
+    console.log('🔍 DEBUG handleInputClick: COMPLETE');
 }
 
 /**
  * Tạo popup cho input
  */
 function createPopupForInput(input) {
+    console.log('🔍 DEBUG createPopupForInput: START');
+    console.log('  - Input:', input);
+    
     const wrapper = input.closest('.datetime-input-wrapper');
     if (!wrapper) {
-        // Nếu chưa có wrapper, tạo mới
+        console.log('  - No wrapper found, creating new wrapper...');
         const newWrapper = document.createElement('div');
         newWrapper.className = 'datetime-input-wrapper';
         input.parentNode.insertBefore(newWrapper, input);
         newWrapper.appendChild(input);
+        console.log('  - Wrapper created:', newWrapper);
         return createPopupForInput(input);
     }
     
+    console.log('  - Wrapper found:', wrapper);
+    
     // Kiểm tra xem đã có popup chưa
     if (wrapper.querySelector('.datetime-popup')) {
+        console.log('  - Popup already exists, skipping...');
         return;
     }
+    
+    console.log('  - Creating popup element...');
     
     // Tạo note BÊN NGOÀI (nếu chưa có)
     let note = wrapper.querySelector('.datetime-reference-note');
     if (!note) {
+        console.log('  - Creating note element...');
         note = document.createElement('div');
         note.className = 'datetime-reference-note';
         note.style.display = 'none';
@@ -126,6 +233,9 @@ function createPopupForInput(input) {
             </small>
         `;
         wrapper.appendChild(note);
+        console.log('  - Note created:', note);
+    } else {
+        console.log('  - Note already exists:', note);
     }
     
     // Tạo popup
@@ -153,7 +263,7 @@ function createPopupForInput(input) {
                 <button class="quick-btn" data-offset="+1d" type="button">+1d</button>
                 <button class="quick-btn" data-offset="+2d" type="button">+2d</button>
                 <button class="quick-btn" data-offset="+1w" type="button">+1w</button>
-                <button class="quick-btn" data-offset="+1M" type="button">+1M</button>
+                <button class="quick-btn" data-offset="+1M" type="button">+(1M</button>
             </div>
             <div class="quick-custom">
                 <input type="number" placeholder="Số" min="1" max="999" 
@@ -174,173 +284,332 @@ function createPopupForInput(input) {
     `;
     
     wrapper.appendChild(popup);
+    console.log('  - Popup created and appended:', popup);
+    console.log('  - Popup HTML:', popup.outerHTML.substring(0, 200) + '...');
     
     // Setup events cho popup
+    console.log('  - Setting up popup events...');
     setupPopupEvents(input, popup, note);
+    
+    console.log('🔍 DEBUG createPopupForInput: COMPLETE');
 }
 
 /**
  * Setup events cho popup
  */
 function setupPopupEvents(input, popup, note) {
+    console.log('🔍 DEBUG setupPopupEvents: START');
+    console.log('  - Input:', input);
+    console.log('  - Popup:', popup);
+    console.log('  - Note:', note);
+    
+    // ✅ FIX: Query từ DOM thay vì nhận từ parameters
     const popupInput = popup.querySelector('.datetime-popup-input');
     const btnClose = popup.querySelector('.btn-close-popup');
     const quickBtns = popup.querySelectorAll('.quick-btn');
     const btnApplyCustom = popup.querySelector('.btn-apply-custom');
-    const refOffset = note.querySelector('.ref-offset');
+    const refOffset = note ? note.querySelector('.ref-offset') : null;
     
-    // Popup input change → KHÔNG đóng popup ngay, chỉ sync giá trị
-    popupInput.addEventListener('input', function() {
-        // Sync giá trị khi đang nhập (không đóng popup)
-        input.value = this.value;
+    console.log('  - Elements found:', {
+        popupInput: !!popupInput,
+        btnClose: !!btnClose,
+        quickBtns: quickBtns.length,
+        btnApplyCustom: !!btnApplyCustom,
+        refOffset: !!refOffset
     });
     
-    // Popup input blur hoặc Enter → Đóng popup và xử lý offset
-    popupInput.addEventListener('blur', function() {
-        handlePopupInputChange(popupInput, input, note);
-    });
-    
-    popupInput.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handlePopupInputChange(popupInput, input, note);
-            closePopup(popup);
-            markRowDirty(input);
-        } else if (e.key === 'Escape') {
-            e.preventDefault();
-            closePopup(popup);
-        }
-    });
-    
-    // Helper function để xử lý khi popup input thay đổi
-    function handlePopupInputChange(popupInput, input, note) {
-        console.log('🔍 DEBUG popupInput change:');
-        console.log('  - New value:', popupInput.value);
-        console.log('  - Current data-ref-offset:', input.getAttribute('data-ref-offset'));
-        
-        input.value = popupInput.value;
-        
-        // Kiểm tra xem có phải user thay đổi thủ công không
-        const currentOffset = input.getAttribute('data-ref-offset');
-        if (currentOffset) {
-            // Tính lại giá trị từ offset để so sánh
-            const previousInput = getPreviousColumnInput(input);
-            if (previousInput && previousInput.value) {
-                const calculatedValue = calculateOffset(previousInput.value, currentOffset);
-                console.log('  - Calculated value from offset:', calculatedValue);
-                console.log('  - User value:', popupInput.value);
-                
-                if (popupInput.value !== calculatedValue) {
-                    console.log('  ⚠️ User changed value manually, removing offset');
-                    hideReferenceNote(note);
-                    input.removeAttribute('data-ref-offset');
-                } else {
-                    console.log('  ✓ Value matches offset, keeping note');
-                }
-            }
-        } else {
-            console.log('  - No offset, hiding note');
-            hideReferenceNote(note);
-        }
+    // ✅ FIX: Đảm bảo popup input KHÔNG có readonly
+    if (popupInput) {
+        popupInput.removeAttribute('readonly');
+        popupInput.setAttribute('type', 'datetime-local');
     }
     
-    // Quick buttons
-    quickBtns.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            const offset = this.getAttribute('data-offset');
-            applyQuickAction(input, popupInput, offset, note, refOffset);
-        });
-    });
+    // ✅ FIX: Remove old event listeners bằng cách clone popup elements
+    // (Hoặc dùng một cách khác để remove listeners)
     
-    // Custom apply
-    btnApplyCustom.addEventListener('click', function() {
-        const amount = popup.querySelector('.custom-amount').value;
-        const unit = popup.querySelector('.custom-unit').value;
-        if (amount && amount > 0) {
-            const offset = `+${amount}${unit}`;
-            applyQuickAction(input, popupInput, offset, note, refOffset);
+    // ✅ FIX: Cho phép gõ đầy đủ trước khi sync
+    let typingTimeout;
+    if (popupInput) {
+        // Remove old listeners bằng cách replace với clone
+        const newPopupInput = popupInput.cloneNode(true);
+        popupInput.parentNode.replaceChild(newPopupInput, popupInput);
+        const actualPopupInput = newPopupInput;
+        
+        actualPopupInput.addEventListener('input', function(e) {
+            clearTimeout(typingTimeout);
+            typingTimeout = setTimeout(function() {
+                if (actualPopupInput.value) {
+                    input.value = actualPopupInput.value;
+                    const row = input.closest('tr');
+                    if (row) {
+                        row.setAttribute('data-dirty', 'true');
+                        if (window.TaskActions && window.TaskActions.updateSaveAllButton) {
+                            window.TaskActions.updateSaveAllButton();
+                        }
+                    }
+                }
+            }, 500);
+        });
+        
+        actualPopupInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(typingTimeout);
+                
+                if (actualPopupInput.value) {
+                    input.value = actualPopupInput.value;
+                    input.removeAttribute('data-ref-offset');
+                    if (note) {
+                        hideReferenceNote(note);
+                    }
+                    
+                    const row = input.closest('tr');
+                    if (row) {
+                        row.setAttribute('data-dirty', 'true');
+                        if (window.TaskActions && window.TaskActions.updateSaveAllButton) {
+                            window.TaskActions.updateSaveAllButton();
+                        }
+                    }
+                }
+                
+                closePopup(popup);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                closePopup(popup);
+            }
+        });
+        
+        actualPopupInput.addEventListener('blur', function(e) {
+            setTimeout(function() {
+                if (!popup.contains(document.activeElement)) {
+                    if (actualPopupInput.value) {
+                        input.value = actualPopupInput.value;
+                        const row = input.closest('tr');
+                        if (row) {
+                            row.setAttribute('data-dirty', 'true');
+                            if (window.TaskActions && window.TaskActions.updateSaveAllButton) {
+                                window.TaskActions.updateSaveAllButton();
+                            }
+                        }
+                    }
+                    closePopup(popup);
+                }
+            }, 200);
+        });
+    }
+    
+    // ✅ FIX: Quick buttons - Remove old listeners và attach mới
+    if (quickBtns && quickBtns.length > 0) {
+        quickBtns.forEach(function(btn) {
+            // Clone button để remove old listeners
+            const newBtn = btn.cloneNode(true);
+            btn.parentNode.replaceChild(newBtn, btn);
+            
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔍 DEBUG: Quick button clicked:', this.getAttribute('data-offset'));
+                const offset = this.getAttribute('data-offset');
+                const currentPopupInput = popup.querySelector('.datetime-popup-input');
+                applyQuickAction(input, currentPopupInput, offset, note, refOffset);
+            });
+        });
+    }
+    
+    // ✅ FIX: Custom apply - Remove old listeners và attach mới
+    if (btnApplyCustom) {
+        const newBtnApply = btnApplyCustom.cloneNode(true);
+        btnApplyCustom.parentNode.replaceChild(newBtnApply, btnApplyCustom);
+        
+        newBtnApply.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔍 DEBUG: Custom apply clicked');
+            const amount = popup.querySelector('.custom-amount').value;
+            const unit = popup.querySelector('.custom-unit').value;
+            if (amount && amount > 0) {
+                const offset = `+${amount}${unit}`;
+                const currentPopupInput = popup.querySelector('.datetime-popup-input');
+                applyQuickAction(input, currentPopupInput, offset, note, refOffset);
+            }
+        });
+    }
+    
+    // ✅ FIX: Close button - Remove old listeners và attach mới
+    if (btnClose) {
+        const newBtnClose = btnClose.cloneNode(true);
+        btnClose.parentNode.replaceChild(newBtnClose, btnClose);
+        
+        newBtnClose.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🔍 DEBUG: Close button clicked');
+            closePopup(popup);
+        });
+    }
+    
+    // ✅ FIX: Click outside để đóng popup
+    document.addEventListener('click', function closeOnOutsideClick(e) {
+        if (!popup.contains(e.target) && !input.contains(e.target)) {
+            console.log('🔍 DEBUG: Clicked outside popup, closing...');
+            closePopup(popup);
+            document.removeEventListener('click', closeOnOutsideClick);
         }
     });
     
-    // Close button
-    btnClose.addEventListener('click', function() {
-        closePopup(popup);
-    });
+    console.log('🔍 DEBUG setupPopupEvents: COMPLETE');
 }
 
 /**
  * Mở popup
  */
 function openPopup(input) {
-    const popup = input.closest('.datetime-input-wrapper')?.querySelector('.datetime-popup');
-    if (!popup) return;
-    
-    // Close other popups
-    document.querySelectorAll('.datetime-popup').forEach(function(p) {
-        if (p !== popup) p.style.display = 'none';
+    console.log('🔍 DEBUG openPopup: START');
+    console.log('  - Input:', input);
+    console.log('  - Input tagName:', input.tagName);
+    console.log('  - Input value:', input.value);
+    console.log('  - Input readonly:', input.hasAttribute('readonly'));
+    console.log('  - Input disabled:', input.disabled);
+    console.log('  - Input computed style:', {
+        display: getComputedStyle(input).display,
+        visibility: getComputedStyle(input).visibility,
+        pointerEvents: getComputedStyle(input).pointerEvents,
+        zIndex: getComputedStyle(input).zIndex
     });
     
-    // Tính toán vị trí popup dựa trên input position
-    const inputRect = input.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    const popupHeight = 400; // Estimated popup height
-    
-    // Kiểm tra nếu popup sẽ bị che dưới màn hình
-    let top = inputRect.bottom + 8;
-    if (top + popupHeight > viewportHeight) {
-        // Hiển thị phía trên input nếu không đủ chỗ dưới
-        top = inputRect.top - popupHeight - 8;
-        if (top < 0) {
-            // Nếu vẫn không đủ chỗ, hiển thị ở giữa màn hình
-            top = (viewportHeight - popupHeight) / 2;
-        }
+    const wrapper = input.closest('.datetime-input-wrapper');
+    if (!wrapper) {
+        console.error('❌ No wrapper found for input');
+        return;
     }
     
-    // Set position
+    console.log('  - Wrapper found:', wrapper);
+    
+    let popup = wrapper.querySelector('.datetime-popup');
+    if (!popup) {
+        console.log('  - Popup not found, creating...');
+        createPopupForInput(input);
+        popup = wrapper.querySelector('.datetime-popup');
+    }
+    
+    if (!popup) {
+        console.error('❌ Failed to create popup');
+        return;
+    }
+    
+    console.log('  - Popup found:', popup);
+    console.log('  - Popup computed style BEFORE:', {
+        display: getComputedStyle(popup).display,
+        visibility: getComputedStyle(popup).visibility,
+        position: getComputedStyle(popup).position,
+        zIndex: getComputedStyle(popup).zIndex,
+        top: getComputedStyle(popup).top,
+        left: getComputedStyle(popup).left
+    });
+    
+    // ✅ FIX: Remove readonly để cho phép gõ thủ công
+    input.removeAttribute('readonly');
+    console.log('  - Removed readonly from input');
+    
+    // Set value cho popup input
+    const popupInput = popup.querySelector('.datetime-popup-input');
+    if (popupInput) {
+        popupInput.value = input.value || '';
+        popupInput.removeAttribute('readonly');
+        console.log('  - Popup input ready:', popupInput);
+    } else {
+        console.error('❌ Popup input not found!');
+    }
+    
+    // Tính toán vị trí popup
+    const rect = input.getBoundingClientRect();
+    console.log('  - Input rect:', rect);
+    
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const popupHeight = 300;
+    const popupWidth = 350;
+    
+    let top = rect.bottom + 5;
+    let left = rect.left;
+    
+    if (top + popupHeight > viewportHeight) {
+        top = rect.top - popupHeight - 5;
+    }
+    
+    if (left + popupWidth > viewportWidth) {
+        left = viewportWidth - popupWidth - 10;
+    }
+    
+    if (left < 10) {
+        left = 10;
+    }
+    
     popup.style.position = 'fixed';
     popup.style.top = top + 'px';
-    popup.style.left = inputRect.left + 'px';
+    popup.style.left = left + 'px';
     popup.style.zIndex = '99999';
     popup.style.display = 'block';
     
-    // Sync popup input với main input
-    const popupInput = popup.querySelector('.datetime-popup-input');
-    if (!input.value || input.value.trim() === '') {
-        const now = new Date();
-        const nowStr = formatLocalDateTime(now); // Dùng formatLocalDateTime
-        input.value = nowStr;
-        popupInput.value = nowStr;
-    } else {
-        popupInput.value = input.value || '';
-    }
-    
-    // Create backdrop
-    if (!document.querySelector('.datetime-popup-backdrop')) {
-        const backdrop = document.createElement('div');
-        backdrop.className = 'datetime-popup-backdrop';
-        backdrop.style.zIndex = '99998';
-        backdrop.addEventListener('click', function(e) {
-            // CHỈ đóng popup nếu click vào backdrop, không phải popup
-            if (e.target === backdrop) {
-                closePopup(popup);
-            }
-        });
-        document.body.appendChild(backdrop);
-    }
-    
-    // Prevent popup click từ đóng popup
-    popup.addEventListener('click', function(e) {
-        e.stopPropagation(); // Ngăn event propagate lên backdrop
+    console.log('  - Popup style set:', {
+        position: popup.style.position,
+        top: popup.style.top,
+        left: popup.style.left,
+        zIndex: popup.style.zIndex,
+        display: popup.style.display
     });
+    
+    console.log('  - Popup computed style AFTER:', {
+        display: getComputedStyle(popup).display,
+        visibility: getComputedStyle(popup).visibility,
+        position: getComputedStyle(popup).position,
+        zIndex: getComputedStyle(popup).zIndex,
+        top: getComputedStyle(popup).top,
+        left: getComputedStyle(popup).left
+    });
+    
+    // Focus vào popup input
+    if (popupInput) {
+        setTimeout(function() {
+            popupInput.focus();
+            popupInput.select();
+            console.log('  - Popup input focused');
+            console.log('  - Popup input activeElement:', document.activeElement);
+        }, 100);
+    }
+    
+    console.log('🔍 DEBUG openPopup: COMPLETE');
 }
 
 /**
  * Đóng popup
  */
 function closePopup(popup) {
+    console.log('🔍 DEBUG closePopup: START');
+    console.log('  - Popup:', popup);
+    
+    if (!popup) {
+        console.error('  ❌ Popup is null!');
+        return;
+    }
+    
+    console.log('  - Popup display BEFORE:', getComputedStyle(popup).display);
+    
     popup.style.display = 'none';
-    const backdrop = document.querySelector('.datetime-popup-backdrop');
-    if (backdrop) backdrop.remove();
+    
+    console.log('  - Popup display AFTER:', getComputedStyle(popup).display);
+    
+    // ✅ FIX: Restore readonly sau khi đóng popup
+    const wrapper = popup.closest('.datetime-input-wrapper');
+    if (wrapper) {
+        const input = wrapper.querySelector('.datetime-input');
+        if (input) {
+            input.setAttribute('readonly', 'readonly');
+            console.log('  - Restored readonly to input');
+        }
+    }
+    
+    console.log('🔍 DEBUG closePopup: COMPLETE');
 }
 
 /**
@@ -411,12 +680,51 @@ function applyQuickAction(input, popupInput, offset, note, refOffset) {
 
 /**
  * Hiển thị ghi chú tham chiếu
+ * @param {HTMLElement} inputOrNote - Input element hoặc note element
+ * @param {string} offsetOrRefOffset - Offset string hoặc refOffset element
+ * @param {string} offset - Offset string (optional nếu param 1 là input)
  */
-function showReferenceNote(note, refOffset, offset) {
+function showReferenceNote(inputOrNote, offsetOrRefOffset, offset) {
     console.log('🔍 DEBUG showReferenceNote:');
-    console.log('  - Note element:', note);
-    console.log('  - refOffset element:', refOffset);
-    console.log('  - Offset:', offset);
+    console.log('  - Param 1:', inputOrNote);
+    console.log('  - Param 2:', offsetOrRefOffset);
+    console.log('  - Param 3:', offset);
+    
+    let note, refOffset, actualOffset;
+    
+    // Detect calling signature
+    if (arguments.length === 2) {
+        // Called with (input, offset) - new signature
+        const input = inputOrNote;
+        actualOffset = offsetOrRefOffset;
+        
+        const wrapper = input.closest('.datetime-input-wrapper');
+        if (!wrapper) {
+            console.error('  ❌ No wrapper found for input!');
+            return;
+        }
+        
+        note = wrapper.querySelector('.datetime-reference-note');
+        if (!note) {
+            // Create note element
+            note = document.createElement('div');
+            note.className = 'datetime-reference-note';
+            note.innerHTML = `
+                <small class="text-muted">
+                    <i class="fas fa-link"></i> 
+                    <span class="ref-offset"></span>
+                </small>
+            `;
+            wrapper.appendChild(note);
+        }
+        
+        refOffset = note.querySelector('.ref-offset');
+    } else {
+        // Called with (note, refOffset, offset) - old signature
+        note = inputOrNote;
+        refOffset = offsetOrRefOffset;
+        actualOffset = offset;
+    }
     
     if (!note) {
         console.error('  ❌ Note element is null!');
@@ -428,22 +736,16 @@ function showReferenceNote(note, refOffset, offset) {
         return;
     }
     
-    const offsetText = formatOffset(offset);
+    if (!actualOffset) {
+        console.error('  ❌ Offset is null or undefined!');
+        return;
+    }
+    
+    const offsetText = formatOffset(actualOffset);
     console.log('  - Formatted offset text:', offsetText);
     
     refOffset.textContent = offsetText;
     note.style.display = 'block';
-    
-    // Verify
-    setTimeout(function() {
-        const actualDisplay = getComputedStyle(note).display;
-        const actualText = refOffset.textContent;
-        console.log('  - Verification:', {
-            display: actualDisplay,
-            text: actualText,
-            matches: actualDisplay === 'block' && actualText === offsetText
-        });
-    }, 10);
     
     console.log('🔍 DEBUG showReferenceNote - Completed');
 }
@@ -584,18 +886,22 @@ function hideReferenceNote(note) {
 }
 
 // Export functions
-if (typeof window !== 'undefined') {
-    window.DateTimePicker = {
-        initialize: initializeDateTimePickers,
-        createPopupForInput: createPopupForInput,
-        setupInputEvents: setupInputEvents,
-        hideReferenceNote: hideReferenceNote,
-        showReferenceNote: showReferenceNote,  // ✅ THÊM DÒNG NÀY
-        formatOffset: formatOffset,
-        formatLocalDateTime: formatLocalDateTime,
-        parseLocalDateTime: parseLocalDateTime
-    };
-}
+window.DateTimePicker = {
+    initializeDateTimePickers: initializeDateTimePickers,
+    setupInputEvents: setupInputEvents,
+    handleInputClick: handleInputClick,
+    createPopupForInput: createPopupForInput,
+    openPopup: openPopup,
+    closePopup: closePopup,
+    applyQuickAction: applyQuickAction,
+    showReferenceNote: showReferenceNote,
+    hideReferenceNote: hideReferenceNote,
+    formatOffset: formatOffset,
+    formatLocalDateTime: formatLocalDateTime,
+    parseLocalDateTime: parseLocalDateTime
+};
+
+console.log('✅ DateTimePicker module loaded');
 // Mark đã load
 window.DateTimePickerModule = true;
 })();

@@ -1,0 +1,122 @@
+{% extends "base_auth.html" %}
+
+{% block title %}Đăng ký - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}Đăng ký{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Đăng ký</li>
+{% endblock %}
+
+{% block extra_css %}
+<link href="{{ url_for('static', filename='css/auth-pages.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+<div class="register-box">
+    <div class="register-logo">
+        <b>Hunonic</b> Marketing Tools
+    </div>
+    
+    <div class="card">
+        <div class="card-body register-card-body">
+            <p class="login-box-msg">Tạo tài khoản mới</p>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} mr-2"></i>
+                        {{ message }}
+                        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            {% endwith %}
+            
+            <form method="POST" class="needs-validation" novalidate>
+                <div class="input-group mb-3">
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email" required>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-envelope"></span>
+                        </div>
+                    </div>
+                    <div class="invalid-feedback">Vui lòng nhập email hợp lệ</div>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Mật khẩu" minlength="6" required>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                    <div class="invalid-feedback">Mật khẩu tối thiểu 6 ký tự</div>
+                </div>
+                
+                <div class="input-group mb-3">
+                    <input type="password" class="form-control" id="confirm_password" name="confirm_password" placeholder="Xác nhận mật khẩu" required>
+                    <div class="input-group-append">
+                        <div class="input-group-text">
+                            <span class="fas fa-lock"></span>
+                        </div>
+                    </div>
+                    <div class="invalid-feedback">Mật khẩu xác nhận không khớp</div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-user-plus mr-2"></i>Đăng ký
+                        </button>
+                    </div>
+                </div>
+            </form>
+            
+            <p class="mb-1 mt-3 text-center">
+                <a href="{{ url_for('login') }}">Đã có tài khoản? Đăng nhập ngay</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Bootstrap validation
+    (function() {
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+    })();
+    
+    // Validate password match
+    var password = document.getElementById("password");
+    var confirm_password = document.getElementById("confirm_password");
+    
+    function validatePassword() {
+        if (password.value != confirm_password.value) {
+            confirm_password.setCustomValidity("Mật khẩu xác nhận không khớp");
+        } else {
+            confirm_password.setCustomValidity('');
+        }
+    }
+    
+    if (password && confirm_password) {
+        password.onchange = validatePassword;
+        confirm_password.onkeyup = validatePassword;
+    }
+</script>
+{% endblock %}

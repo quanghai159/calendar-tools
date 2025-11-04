@@ -48,20 +48,22 @@ function updateSaveAllButton() {
  * Tạo nút "Lưu tất cả" ở cuối bảng
  */
 function createSaveAllButton() {
-    // Tìm table wrapper
-    const tableWrapper = document.querySelector('.task-table-wrapper');
+    // Tìm table wrapper (có thể là .task-table-wrapper hoặc .table-responsive)
+    const tableWrapper = document.querySelector('.task-table-wrapper') || 
+                         document.querySelector('.table-responsive');
     if (!tableWrapper) {
-        console.error('Không tìm thấy .task-table-wrapper');
+        console.error('Không tìm thấy table wrapper');
         return;
     }
     
     // Kiểm tra xem đã có button chưa
-    let fab = tableWrapper.querySelector('.save-all-fab');
+    let fab = document.querySelector('.save-all-fab');
     if (fab) return;
     
     // Tạo button
     fab = document.createElement('button');
-    fab.className = 'save-all-fab';
+    fab.className = 'save-all-fab btn btn-primary';
+    fab.style.cssText = 'display: none; margin: 15px auto; padding: 10px 24px;';
     fab.innerHTML = `
         <i class="fas fa-save"></i> 
         Lưu tất cả (<span class="save-count">0</span>)
@@ -71,83 +73,74 @@ function createSaveAllButton() {
         saveAllRows();
     });
     
-    // Chèn vào SAU table wrapper, không phải trong table
-    const table = tableWrapper.querySelector('.task-table');
-    if (table) {
-        // Tìm parent của tableWrapper để chèn button vào đó
-        const parent = tableWrapper.parentNode;
-        if (parent) {
-            // Tạo wrapper cho button để căn giữa
-            const buttonWrapper = document.createElement('div');
-            buttonWrapper.style.textAlign = 'center';
-            buttonWrapper.style.marginTop = '15px';
-            buttonWrapper.appendChild(fab);
-            parent.insertBefore(buttonWrapper, tableWrapper.nextSibling);
-        } else {
-            // Fallback: chèn vào sau table
-            table.parentNode.insertBefore(fab, table.nextSibling);
-        }
+    // Chèn vào sau table wrapper hoặc vào save-all-wrapper
+    const saveAllWrapper = document.querySelector('#saveAllWrapper') || 
+                          document.querySelector('.save-all-wrapper');
+    if (saveAllWrapper) {
+        saveAllWrapper.appendChild(fab);
     } else {
-        tableWrapper.appendChild(fab);
+        // Fallback: chèn vào sau table wrapper
+        tableWrapper.parentNode.insertBefore(fab, tableWrapper.nextSibling);
     }
 }
 
 /**
  * Lưu tất cả rows dirty
  */
-async function saveAllRows() {
-    const dirtyRows = document.querySelectorAll('tr[data-dirty="true"]');
+function saveAllRows() {
+    const saveBtn = document.querySelector('.save-all-fab');
+    if (!saveBtn) return;
+    
+    const dirtyRows = document.querySelectorAll('[data-dirty="true"]');
     if (dirtyRows.length === 0) {
-        showFlash('Không có thay đổi nào để lưu!', 'error');
+        console.log('✓ No dirty rows to save');
         return;
     }
     
-    const total = dirtyRows.length;
-    let successCount = 0;
-    let failCount = 0;
+    // Show spinner
+    const originalHTML = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Đang lưu...';
+    saveBtn.disabled = true;
     
-    // Disable button trong lúc save
-    const saveAllBtn = document.querySelector('.save-all-fab');
-    if (saveAllBtn) {
-        saveAllBtn.disabled = true;
-        saveAllBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu...`;
-    }
-    
-    // Lưu từng row
-    for (let i = 0; i < dirtyRows.length; i++) {
-        const row = dirtyRows[i];
-        const saveBtn = row.querySelector('button[onclick*="saveRow"]');
+    // ✅ FIX: Tìm button trong mỗi row thay vì truyền row trực tiếp
+    const promises = Array.from(dirtyRows).map(function(row) {
+        // Tìm button "Lưu" trong row (button đầu tiên trong actions column)
+        const actionsCell = row.cells[row.cells.length - 1]; // Cột cuối cùng
+        const saveBtnInRow = actionsCell.querySelector('button[onclick*="saveRow"]');
         
-        if (saveBtn) {
-            try {
-                await saveRowPromise(saveBtn);
-                successCount++;
-                row.removeAttribute('data-dirty');
-            } catch (error) {
-                failCount++;
+        if (!saveBtnInRow) {
+            // Nếu không tìm thấy, tạo một button tạm để pass vào getRowData
+            const tempBtn = document.createElement('button');
+            tempBtn.style.display = 'none';
+            row.appendChild(tempBtn);
+            return saveRowPromise(tempBtn);
+        }
+        
+        return saveRowPromise(saveBtnInRow);
+    });
+    
+    Promise.all(promises)
+        .then(results => {
+            const successCount = results.filter(r => r && r.status === 'success').length;
+            const failCount = results.length - successCount;
+            
+            if (failCount === 0) {
+                alert(`✓ Đã lưu thành công ${successCount} tác vụ!`);
+            } else {
+                alert(`⚠️ Lưu ${successCount} thành công, ${failCount} thất bại.`);
             }
-        }
-        
-        // Update progress
-        if (saveAllBtn) {
-            saveAllBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Đang lưu... (${i + 1}/${total})`;
-        }
-    }
-    
-    // Re-enable button
-    if (saveAllBtn) {
-        saveAllBtn.disabled = false;
-    }
-    
-    // Update button
-    updateSaveAllButton();
-    
-    // Show result
-    if (failCount === 0) {
-        showFlash(`Đã lưu ${successCount} tác vụ thành công!`, 'success');
-    } else {
-        showFlash(`Đã lưu ${successCount}/${total} tác vụ. ${failCount} tác vụ lỗi.`, 'error');
-    }
+            
+            updateSaveAllButton();
+        })
+        .catch(error => {
+            console.error('❌ Error saving all:', error);
+            alert('Lỗi khi lưu: ' + error.message);
+        })
+        .finally(() => {
+            // RESTORE BUTTON
+            saveBtn.innerHTML = originalHTML;
+            saveBtn.disabled = false;
+        });
 }
 
 /**
@@ -156,8 +149,15 @@ async function saveAllRows() {
 function saveRowPromise(btn) {
     return new Promise(function(resolve, reject) {
         const data = getRowData(btn);
-        const isNew = !data.task_id;
+        // ✅ FIX: Kiểm tra cả "NEW" và empty string
+        const isNew = !data.task_id || data.task_id === 'NEW' || data.task_id === '';
         const url = isNew ? '/api/task' : `/api/task/${data.task_id}`;
+        
+        console.log('🔍 DEBUG saveRowPromise:', {
+            task_id: data.task_id,
+            isNew: isNew,
+            url: url
+        });
 
         // Thu thập offsets
         const allInputs = data.tr.querySelectorAll('.datetime-input');
@@ -186,7 +186,7 @@ function saveRowPromise(btn) {
             notif7: data.notif7,
             notif8: data.notif8,
             status: data.status,
-            offsets: offsets // THÊM offsets
+            offsets: offsets
         };
         
         fetch(url, {
@@ -196,16 +196,21 @@ function saveRowPromise(btn) {
         })
         .then(r => r.json())
         .then(res => {
+            console.log('🔍 DEBUG saveRowPromise response:', res);
             if (res.status === 'success') {
                 if (isNew && res.task_id) {
                     data.tr.setAttribute('data-task-id', res.task_id);
+                    console.log('  - Updated task_id:', res.task_id);
                 }
                 resolve(res);
             } else {
                 reject(new Error(res.message || 'Lưu không thành công'));
             }
         })
-        .catch(error => reject(error));
+        .catch(error => {
+            console.error('❌ Error in saveRowPromise:', error);
+            reject(error);
+        });
     });
 }
 
@@ -213,11 +218,19 @@ function saveRowPromise(btn) {
  * Nhân bản Task
  */
 function duplicateRow(btn) {
+    console.log('🔍 DEBUG duplicateRow: START');
     const row = btn.closest('tr');
     const tbody = row.parentElement;
     
+    // ✅ FIX: Xóa tất cả popups trong row trước khi clone
+    const oldPopups = row.querySelectorAll('.datetime-popup');
+    oldPopups.forEach(function(popup) {
+        popup.remove();
+    });
+    
     // Tạo row mới
     const newRow = row.cloneNode(true);
+    console.log('  - New row cloned:', newRow);
     
     // Xóa task_id (để tạo task mới)
     newRow.removeAttribute('data-task-id');
@@ -232,6 +245,13 @@ function duplicateRow(btn) {
     for (let i = newRowIndex; i < tbody.rows.length; i++) {
         tbody.rows[i].cells[0].textContent = i + 1;
     }
+    
+    // ✅ FIX: Xóa popups đã được clone (sẽ tạo lại sau)
+    const clonedPopups = newRow.querySelectorAll('.datetime-popup');
+    clonedPopups.forEach(function(popup) {
+        console.log('  - Removing cloned popup:', popup);
+        popup.remove();
+    });
     
     // Xóa ghi chú tham chiếu (nếu có)
     const datetimeWrappers = newRow.querySelectorAll('.datetime-input-wrapper');
@@ -261,24 +281,53 @@ function duplicateRow(btn) {
     
     // Chèn row mới ngay sau row hiện tại
     tbody.insertBefore(newRow, row.nextSibling);
+    console.log('  - New row inserted');
     
-    // Re-initialize datetime pickers cho row mới
-    const newInputs = newRow.querySelectorAll('.datetime-input');
-    newInputs.forEach(function(input) {
-        // Đảm bảo có wrapper
-        if (!input.closest('.datetime-input-wrapper')) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'datetime-input-wrapper';
-            input.parentNode.insertBefore(wrapper, input);
-            wrapper.appendChild(input);
+    // ✅ FIX: Re-initialize datetime pickers cho row mới (sau khi insert vào DOM)
+    setTimeout(function() {
+        const newInputs = newRow.querySelectorAll('.datetime-input');
+        console.log(`  - Found ${newInputs.length} datetime inputs in new row`);
+        
+        newInputs.forEach(function(input, index) {
+            console.log(`  - Processing input ${index + 1}:`, input);
+            
+            // Đảm bảo có wrapper
+            let wrapper = input.closest('.datetime-input-wrapper');
+            if (!wrapper) {
+                console.log(`    - Creating wrapper for input ${index + 1}`);
+                wrapper = document.createElement('div');
+                wrapper.className = 'datetime-input-wrapper';
+                input.parentNode.insertBefore(wrapper, input);
+                wrapper.appendChild(input);
+            }
+            
+            // ✅ FIX: Xóa popup cũ nếu có (từ clone)
+            const oldPopup = wrapper.querySelector('.datetime-popup');
+            if (oldPopup) {
+                console.log(`    - Removing old popup from input ${index + 1}`);
+                oldPopup.remove();
+            }
+            
+            // ✅ FIX: Tạo popup mới và setup events
+            if (window.DateTimePicker) {
+                console.log(`    - Creating popup for input ${index + 1}`);
+                window.DateTimePicker.createPopupForInput(input);
+                
+                console.log(`    - Setting up events for input ${index + 1}`);
+                window.DateTimePicker.setupInputEvents(input);
+            } else {
+                console.error('    ❌ DateTimePicker not available!');
+            }
+        });
+        
+        // ✅ FIX: Initialize copy/paste cho row mới
+        if (window.DateTimeCopyPaste && window.DateTimeCopyPaste.initializeCopyPaste) {
+            console.log('  - Initializing copy/paste for new row');
+            window.DateTimeCopyPaste.initializeCopyPaste();
         }
         
-        // Tạo popup nếu chưa có
-        if (window.DateTimePicker) {
-            window.DateTimePicker.createPopupForInput(input);
-            window.DateTimePicker.setupInputEvents(input);
-        }
-    });
+        console.log('🔍 DEBUG duplicateRow: COMPLETE');
+    }, 100);
     
     // Mark row mới là dirty
     newRow.setAttribute('data-dirty', 'true');

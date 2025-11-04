@@ -415,6 +415,36 @@ class SimpleTaskManager:
         except Exception as e:
             print(f"❌ Error updating task {task_id}: {e}")
             return False
+
+        def delete_task(self, task_id: str) -> bool:
+            """
+            Xóa task và các dữ liệu liên quan
+            
+            Args:
+                task_id: ID của task cần xóa
+                
+            Returns:
+                bool: True nếu xóa thành công
+            """
+            try:
+                with self.db.get_connection() as conn:
+                    # Xóa notifications trước
+                    conn.execute("DELETE FROM notifications WHERE task_id = ?", (task_id,))
+                    
+                    # Xóa calendar events
+                    conn.execute("DELETE FROM calendar_events WHERE task_id = ?", (task_id,))
+                    
+                    # Xóa task
+                    cur = conn.cursor()
+                    cur.execute("DELETE FROM tasks WHERE task_id = ?", (task_id,))
+                    conn.commit()
+                    
+                    return cur.rowcount > 0
+            except Exception as e:
+                print(f"❌ Error deleting task {task_id}: {e}")
+                import traceback
+                traceback.print_exc()
+                return False
     
     def _schedule_notification(self, task_id: str, event_id: str, notification_time: str):
         """

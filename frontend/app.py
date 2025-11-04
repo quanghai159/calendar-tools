@@ -160,24 +160,64 @@ def require_login(f):
 
 from shared.auth.permission_checker import PermissionChecker
 @app.context_processor
-def inject_perms():
+def inject_perms_and_tools():
+    """Inject permissions và tools menu vào templates"""
     uid = session.get('user_id')
+    
+    # Initialize result dict
+    result = {}
+    
+    # Load tools menu nếu user đã login
+    tools_menu = []
+    if uid:
+        try:
+            conn = sqlite3.connect(app.config.get("DB_PATH", "database/calendar_tools.db"))
+            conn.row_factory = sqlite3.Row
+            
+            # Get active tools
+            tools = conn.execute("""
+                SELECT tool_id, tool_name, icon, base_url 
+                FROM tools 
+                WHERE is_active = 1 
+                ORDER BY tool_name
+            """).fetchall()
+            
+            # Check user access
+            pc = PermissionChecker(app.config.get("DB_PATH", "database/calendar_tools.db"))
+            for tool in tools:
+                if pc.has_tool_access(uid, tool['tool_id']):
+                    tools_menu.append({
+                        'id': tool['tool_id'],
+                        'name': tool['tool_name'],
+                        'icon': tool['icon'] or 'fas fa-circle',
+                        'url': tool['base_url'] or f'/{tool["tool_id"]}'
+                    })
+            
+            conn.close()
+        except Exception as e:
+            print(f"⚠️ Error loading tools menu: {e}")
+    
+    result['available_tools'] = tools_menu
+    
+    # Add permissions
     if not uid:
-        return dict(can=lambda p: False, is_admin=lambda: False)
-    pc = PermissionChecker(app.config.get("DB_PATH", "database/calendar_tools.db"))
-    def can(p): return pc.has_permission(uid, p)
-    def is_admin():
-        groups = pc.get_user_groups(uid)
-        return any(g in ('super_admin', 'admin') for g in groups)
-    return dict(can=can, is_admin=is_admin)
+        result.update(dict(can=lambda p: False, is_admin=lambda: False))
+    else:
+        pc = PermissionChecker(app.config.get("DB_PATH", "database/calendar_tools.db"))
+        def can(p): return pc.has_permission(uid, p)
+        def is_admin():
+            groups = pc.get_user_groups(uid)
+            return any(g in ('super_admin', 'admin') for g in groups)
+        result.update(dict(can=can, is_admin=is_admin))
+    
+    return result
 
 # Routes
 @app.route('/')
 def index():
     """Trang chủ"""
-    return render_template('index.html')
+    return render_template('index_adminlte.html')
 
-# Thêm routes authentication (thêm sau route '/' hoặc trước route '/create_simple_task')
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Trang đăng nhập"""
@@ -185,24 +225,102 @@ def login():
         email = request.form.get('email')
         password = request.form.get('password')
         
+        if not email or not password:
+            flash('Vui lòng nhập đầy đủ email và mật khẩu', 'error')
+            return render_template('login_adminlte.html')
+        
         if not firebase_auth:
             flash('Firebase Auth chưa được cấu hình', 'error')
-            return render_template('login.html')
+            return render_template('login_adminlte.html')
         
-        # Đăng nhập
-        user = firebase_auth.sign_in_with_email_and_password(email, password)
+        try:
+            # Đăng nhập
+            user = firebase_auth.sign_in_with_email_and_password(email, password)
+            
+            if user and (user.get('uid') or user.get('localId')):
+                session['user_id'] = user.get('uid') or user.get('localId')
+                session['user_email'] = user.get('email')
+                session['id_token'] = user.get('id_token') or user.get('idToken') or None
+
+                # Upsert hồ sơ user vào bảng users
+                db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
+                uid = user.get('uid') or user.get('localId')
+                email_val = user.get('email', '')
+                display_name = (email_val.split('@')[0] if email_val else uid)
+
+                with sqlite3.connect(db_path) as conn:
+                    conn.execute("""
+                        INSERT INTO users (user_id, display_name, email, phone_number, created_at, updated_at)
+                        VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
+                        ON CONFLICT(user_id) DO UPDATE SET
+                            display_name = excluded.display_name,
+                            email        = excluded.email,
+                            phone_number = COALESCE(excluded.phone_number, phone_number),
+                            updated_at   = datetime('now')
+                    """, (uid, display_name, email_val, None))
+                    conn.commit()
+                
+                flash('Đăng nhập thành công!', 'success')
+                next_url = request.args.get('next') or url_for('index')
+                return redirect(next_url)
+            else:
+                flash('Email hoặc mật khẩu không đúng', 'error')
+                return render_template('login_adminlte.html')
+        except Exception as e:
+            error_msg = str(e)
+            if 'INVALID_LOGIN_CREDENTIALS' in error_msg or 'INVALID_PASSWORD' in error_msg:
+                flash('Email hoặc mật khẩu không đúng', 'error')
+            elif 'USER_NOT_FOUND' in error_msg:
+                flash('Tài khoản không tồn tại', 'error')
+            else:
+                flash(f'Lỗi đăng nhập: {error_msg}', 'error')
+            return render_template('login_adminlte.html')
+    
+    return render_template('login_adminlte.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    """Trang đăng ký"""
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
         
-        if user and (user.get('uid') or user.get('localId')):
+        if not email or not password or not confirm_password:
+            flash('Vui lòng nhập đầy đủ thông tin', 'error')
+            return render_template('register_adminlte.html')
+        
+        if password != confirm_password:
+            flash('Mật khẩu xác nhận không khớp', 'error')
+            return render_template('register_adminlte.html')
+        
+        if len(password) < 6:
+            flash('Mật khẩu phải có ít nhất 6 ký tự', 'error')
+            return render_template('register_adminlte.html')
+        
+        if not firebase_auth:
+            flash('Firebase Auth chưa được cấu hình', 'error')
+            return render_template('register_adminlte.html')
+        
+        try:
+            # Đăng ký
+            user = firebase_auth.create_user_with_email_and_password(email, password)
+
+            if not user or not ('localId' in user or 'uid' in user):
+                flash('Lỗi đăng ký. Vui lòng thử lại', 'error')
+                return render_template('register_adminlte.html')
+            
+            # Success - tạo session
             session['user_id'] = user.get('uid') or user.get('localId')
             session['user_email'] = user.get('email')
-            session['id_token'] = user.get('idToken') or user.get('id_token') or None
+            session['id_token'] = user.get('id_token') or user.get('idToken') or None
 
             # Upsert hồ sơ user vào bảng users
             db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
-            uid = user.get('uid') or user.get('localId')
+            uid = user.get('localId') or user.get('uid')
             email_val = user.get('email', '')
             display_name = (email_val.split('@')[0] if email_val else uid)
-
+            
             with sqlite3.connect(db_path) as conn:
                 conn.execute("""
                     INSERT INTO users (user_id, display_name, email, phone_number, created_at, updated_at)
@@ -215,77 +333,53 @@ def login():
                 """, (uid, display_name, email_val, None))
                 conn.commit()
             
-            flash('Đăng nhập thành công!', 'success')
-            next_url = request.args.get('next') or url_for('index')
-            return redirect(next_url)
-        else:
-            flash('Email hoặc mật khẩu không đúng', 'error')
-            return render_template('login.html')
-    
-    return render_template('login.html')
-
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    """Trang đăng ký"""
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+            # Assign user to 'user' group
+            with sqlite3.connect(db_path) as conn:
+                conn.execute("""
+                    INSERT OR IGNORE INTO user_group_memberships (user_id, group_id)
+                    VALUES (?, 'user')
+                """, (uid,))
+                conn.commit()
+            
+            # Grant calendar-tools access
+            with sqlite3.connect(db_path) as conn:
+                conn.execute("""
+                    INSERT OR IGNORE INTO user_tool_access (user_id, tool_id)
+                    VALUES (?, 'calendar-tools')
+                """, (uid,))
+                conn.commit()
+            
+            # Grant default permissions
+            default_perms = [
+                'calendar-tools:task.view',
+                'calendar-tools:task.create',
+                'calendar-tools:notification.send'
+            ]
+            with sqlite3.connect(db_path) as conn:
+                for perm_id in default_perms:
+                    conn.execute("""
+                        INSERT OR IGNORE INTO user_permissions (user_id, permission_id)
+                        VALUES (?, ?)
+                    """, (uid, perm_id))
+                conn.commit()
+            
+            flash('Đăng ký thành công! Đang chuyển hướng...', 'success')
+            return redirect(url_for('index'))
+            
+        except Exception as e:
+                error_msg = str(e)
+                if 'EMAIL_EXISTS' in error_msg:
+                    flash('Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác', 'error')
+                elif 'WEAK_PASSWORD' in error_msg:
+                    flash('Mật khẩu quá yếu. Vui lòng sử dụng mật khẩu mạnh hơn', 'error')
+                elif 'INVALID_EMAIL' in error_msg:
+                    flash('Email không hợp lệ', 'error')
+                else:
+                    flash(f'Lỗi đăng ký: {error_msg}', 'error')
+                return render_template('register_adminlte.html')
         
-        if password != confirm_password:
-            flash('Mật khẩu xác nhận không khớp', 'error')
-            return render_template('register.html')
-        
-        if not firebase_auth:
-            flash('Firebase Auth chưa được cấu hình', 'error')
-            return render_template('register.html')
-        
-        # Đăng ký
-        user = firebase_auth.create_user_with_email_and_password(email, password)
-
-        # **Nếu user trả về lỗi hoặc thiếu trường, return luôn**
-        if not user or not ('localId' in user or 'uid' in user):
-            flash('Lỗi đăng ký. Email có thể đã được sử dụng', 'error')
-            return render_template('register.html')
-        # Đảm bảo không truy cập user['id_token'], dùng get
-        session['user_id'] = user.get('uid') or user.get('localId')
-        session['user_email'] = user.get('email')
-        session['id_token'] = user.get('idToken') or user.get('id_token') or None
-
-        # Upsert hồ sơ user vào bảng users sau đăng ký
-        db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
-        uid = user.get('localId') or user.get('uid')
-        email_val = user.get('email', '')
-        display_name = (email_val.split('@')[0] if email_val else uid)
-        with sqlite3.connect(db_path) as conn:
-            conn.execute("""
-                INSERT INTO users (user_id, display_name, email, phone_number, created_at, updated_at)
-                VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
-                ON CONFLICT(user_id) DO UPDATE SET
-                    display_name = excluded.display_name,
-                    email        = excluded.email,
-                    phone_number = COALESCE(excluded.phone_number, phone_number),
-                    updated_at   = datetime('now')
-            """, (uid, display_name, email_val, None))
-            # Gán nhóm user/tool/quyền mặc định
-            conn.execute(
-                "INSERT OR IGNORE INTO user_group_memberships (user_id, group_id) VALUES (?,?)",
-                (uid,'user')  # Dùng 'user' thay vì 'member'
-            )
-            conn.execute(
-                "INSERT OR IGNORE INTO tools (tool_id, tool_name) VALUES (?,?)",
-                ('calendar-tools','Calendar Tools')
-            )
-            conn.execute(
-                "INSERT OR IGNORE INTO user_tool_access (user_id, tool_id) VALUES (?,?)",
-                (uid,'calendar-tools')
-            )
-            for pid in ['calendar-tools:task.view','calendar-tools:task.create','calendar-tools:notification.send']:
-                conn.execute("INSERT OR IGNORE INTO user_permissions (user_id, permission_id) VALUES (?,?)", (uid, pid))
-            conn.commit()
-        flash('Đăng ký thành công!', 'success')
-        return redirect(url_for('index'))
-    return render_template('register.html')
+        # GET request
+        return render_template('register_adminlte.html')
 
 @app.route('/logout')
 def logout():
@@ -325,7 +419,7 @@ def create_simple_task():
             flash(f'Lỗi tạo tác vụ: {str(e)}', 'error')
             return redirect(url_for('create_simple_task'))
     
-    return render_template('create_simple_task.html')
+    return render_template('create_simple_task_adminlte.html')
 
 @app.route('/profile/settings', methods=['GET', 'POST'])
 @require_login
@@ -483,7 +577,7 @@ def profile_settings():
         "notif_label_8": get_val("notif_label_8", default="Thông báo 8"),
     }
 
-    return render_template('profile_settings.html', current=current)    
+    return render_template('profile_settings_adminlte.html', current=current)
 
 @app.route('/tasks')
 @require_login
@@ -499,20 +593,10 @@ def view_tasks():
             notif_labels.append(settings_mgr.get_setting(user_id, f'notif_label_{i}', tool_id=None, default=f'Thông báo {i}') or f'Thông báo {i}')
         
         tasks = task_manager.get_tasks(user_id=user_id)
-        
-        # Load offsets cho tất cả tasks
         task_ids = [task['task_id'] for task in tasks]
-        print(f"🔍 DEBUG view_tasks:")
-        print(f"  - Found {len(tasks)} tasks")
-        print(f"  - Task IDs: {[t[:8] + '...' for t in task_ids[:5]]}...")
-        
         task_offsets = load_task_offsets(task_ids)
         
-        print(f"  - Loaded offsets for {len(task_offsets)} tasks")
-        for task_id, offsets in list(task_offsets.items())[:3]:
-            print(f"    - {task_id[:8]}...: {list(offsets.keys())}")
-        
-        return render_template('tasks_list.html', 
+        return render_template('tasks_list_adminlte.html', 
                              tasks=tasks, 
                              notif_labels=notif_labels,
                              task_offsets=task_offsets)
@@ -521,7 +605,7 @@ def view_tasks():
         import traceback
         traceback.print_exc()
         flash(f'Lỗi lấy danh sách tasks: {str(e)}', 'error')
-        return render_template('tasks_list.html', tasks=[], notif_labels=[], task_offsets={})
+        return render_template('tasks_list_adminlte.html', tasks=[], notif_labels=[], task_offsets={})
 
 def load_task_offsets(task_ids):
     """Load offsets từ database"""
@@ -571,17 +655,20 @@ def load_task_offsets(task_ids):
     return offsets_map
 
 @app.route('/task/<task_id>')
+@require_login
+@require_tool_access('calendar-tools')
+@require_permission('calendar-tools:task.view')
 def view_task_detail(task_id):
     """Xem chi tiết task"""
     try:
-        tasks = task_manager.get_tasks()
+        tasks = task_manager.get_tasks(user_id=session.get('user_id'))
         task = next((t for t in tasks if t['task_id'] == task_id), None)
         
         if not task:
             flash('Không tìm thấy task', 'error')
             return redirect(url_for('view_tasks'))
         
-        return render_template('task_detail.html', task=task)
+        return render_template('task_detail_adminlte.html', task=task)
     except Exception as e:
         flash(f'Lỗi xem chi tiết task: {str(e)}', 'error')
         return redirect(url_for('view_tasks'))
@@ -705,13 +792,13 @@ def report_tasks():
                 if dt <= urgent_dt:
                     t["_urgent"].add(col)    
 
-    return render_template('report_tasks.html',
-                           tasks=tasks,
-                           notif_labels=notif_labels,
-                           days=days,
-                           q=keyword,
-                           status=status,
-                           category=category)
+    return render_template('report_tasks_adminlte.html',
+                        tasks=tasks,
+                        notif_labels=notif_labels,
+                        days=days,
+                        q=keyword,
+                        status=status,
+                        category=category)
 
 @app.route('/process_notifications')
 def process_notifications():
@@ -769,24 +856,37 @@ def test_notification(task_id):
     return redirect(url_for('view_tasks'))
 
 @app.route('/api/task', methods=['POST'])
-@app.route('/api/task/<task_id>', methods=['POST'])
+@app.route('/api/task/<task_id>', methods=['POST', 'PUT', 'DELETE'])
 @require_login
+@require_tool_access('calendar-tools')
+@require_permission('calendar-tools:task.create')
 def api_task(task_id=None):
-    """API để tạo/cập nhật task"""
+    """API để tạo/cập nhật/xóa task"""
     try:
         user_id = session.get('user_id')
+        
+        # DELETE
+        if request.method == 'DELETE':
+            success = task_manager.delete_task(task_id)
+            if success:
+                return jsonify({'status': 'success', 'message': 'Đã xóa task'})
+            else:
+                return jsonify({'status': 'error', 'message': 'Không thể xóa task'})
+        
+        # POST/PUT - Create/Update
         data = request.get_json()
         
-        print(f"🔍 DEBUG api_task:")
-        print(f"  - task_id: {task_id}")
-        print(f"  - user_id: {user_id}")
-        print(f"  - data keys: {list(data.keys()) if data else 'None'}")
+        # Quick status update via PUT
+        if request.method == 'PUT' and 'status' in data and len(data) == 1:
+            task_data = {'status': data['status']}
+            success = task_manager.update_task(task_id, task_data)
+            if success:
+                return jsonify({'status': 'success', 'message': 'Đã cập nhật trạng thái'})
+            else:
+                return jsonify({'status': 'error', 'message': 'Không thể cập nhật'})
         
-        # Extract offsets từ payload
+        # Full create/update logic
         offsets = data.get('offsets', {})
-        print(f"  - offsets: {offsets}")
-        
-        # Tạo/update task (giữ nguyên logic cũ)
         task_data = {
             'title': data.get('title'),
             'description': data.get('description'),
@@ -805,43 +905,25 @@ def api_task(task_id=None):
             'status': data.get('status', 'pending')
         }
         
-        if task_id:
+        # ✅ FIX: Kiểm tra task_id hợp lệ (không phải "NEW" hoặc empty)
+        if task_id and task_id != 'NEW' and task_id.strip():
             # Update
-            print(f"  - Updating task {task_id}")
-            try:
-                success = task_manager.update_task(task_id, task_data)  # ✅ SỬA Ở ĐÂY
-                result_task_id = task_id
-                print(f"  - Update result: {success}")
-            except Exception as e:
-                print(f"  ❌ Error updating task: {e}")
-                import traceback
-                traceback.print_exc()
-                raise
+            print(f"🔍 Updating task: {task_id}")
+            success = task_manager.update_task(task_id, task_data)
+            result_task_id = task_id
         else:
             # Create
-            print(f"  - Creating new task")
-            try:
-                # Thêm user_id vào task_data
-                task_data['user_id'] = user_id
-                result_task_id = task_manager.create_task(task_data)  # ✅ SỬA Ở ĐÂY
-                success = bool(result_task_id)
-                print(f"  - Create result: task_id={result_task_id}, success={success}")
-            except Exception as e:
-                print(f"  ❌ Error creating task: {e}")
-                import traceback
-                traceback.print_exc()
-                raise
+            print(f"🔍 Creating new task")
+            task_data['user_id'] = user_id
+            result_task_id = task_manager.create_task(task_data)
+            success = bool(result_task_id)
         
-        # Lưu offsets vào database (KHÔNG raise exception nếu fail)
+        # Save offsets
         if success and offsets:
-            print(f"  - Saving offsets: {offsets}")
             try:
                 save_task_offsets(result_task_id, offsets)
             except Exception as e:
-                print(f"  ⚠️ Error saving offsets (non-critical): {e}")
-                import traceback
-                traceback.print_exc()
-                # KHÔNG raise - chỉ log lỗi
+                print(f"⚠️ Error saving offsets: {e}")
         
         if success:
             return jsonify({
@@ -850,19 +932,13 @@ def api_task(task_id=None):
                 'task_id': result_task_id
             })
         else:
-            return jsonify({
-                'status': 'error',
-                'message': 'Lưu không thành công'
-            }), 400
+            return jsonify({'status': 'error', 'message': 'Lưu thất bại'})
             
     except Exception as e:
-        print(f"❌ Error in api_task: {e}")
+        print(f"❌ API Error: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 def save_task_offsets(task_id, offsets):
     """Lưu offsets vào database"""
@@ -1010,40 +1086,19 @@ def api_tasks():
             'error': str(e)
         }), 500
 
-@app.route('/api/task/<task_id>', methods=['POST'])
-def api_update_task(task_id):
-    try:
-        data = request.get_json() or {}
-        ok = task_manager.update_task(task_id, data)
-        if ok:
-            return jsonify(status='success', message='Đã lưu tác vụ!')
-        return jsonify(status='error', message='Không có thay đổi hoặc không tìm thấy bản ghi')
-    except Exception as e:
-        return jsonify(status='error', message=str(e)), 500
-
-@app.route('/api/task/<task_id>', methods=['DELETE'])
-def api_delete_task(task_id):
-    try:
-        import sqlite3
-        db_path = app.config.get("DB_PATH","database/calendar_tools.db")
-        with sqlite3.connect(db_path) as conn:
-            cur = conn.cursor()
-            cur.execute("DELETE FROM tasks WHERE task_id = ?", (task_id,))
-            conn.commit()
-            if cur.rowcount > 0:
-                return jsonify(status='success', message='Đã xóa tác vụ!')
-            return jsonify(status='error', message='Không tìm thấy tác vụ')
-    except Exception as e:
-        return jsonify(status='error', message=str(e)), 500
-
 @app.route('/calendar-tools')
 @require_login
 @require_tool_access('calendar-tools')
 def calendar_tools_home():
     """Trang chủ của Calendar Tools"""
     try:
-        # Lấy thống kê từ database
-        tasks = task_manager.get_tasks()
+        user_id = session.get('user_id')
+        if not user_id:
+            flash('Vui lòng đăng nhập', 'error')
+            return redirect(url_for('login'))
+        
+        # Lấy thống kê từ database (filter theo user_id)
+        tasks = task_manager.get_tasks(user_id=user_id)
         
         stats = {
             'total_tasks': len(tasks),
@@ -1052,10 +1107,13 @@ def calendar_tools_home():
             'overdue_tasks': len([t for t in tasks if t.get('status') == 'overdue'])
         }
         
-        return render_template('calendar_tools_home.html', stats=stats)
+        return render_template('calendar_tools_home_adminlte.html', stats=stats)
     except Exception as e:
         print(f"❌ Error loading calendar tools home: {e}")
-        return render_template('calendar_tools_home.html', stats={})
+        import traceback
+        traceback.print_exc()
+        flash(f'Lỗi tải trang: {str(e)}', 'error')
+        return render_template('calendar_tools_home_adminlte.html', stats={})
 
 @app.route('/admin/users')
 @require_login
@@ -1071,7 +1129,7 @@ def admin_list_users():
         perms = [r[0] for r in conn.execute("SELECT permission_id FROM user_permissions WHERE user_id=?", (u['user_id'],))]
         user_infos.append({'user_id': u['user_id'], 'name': uname, 'perms': perms})
     conn.close()
-    return render_template('admin_users.html', users=user_infos)
+    return render_template('admin_users_adminlte.html', users=user_infos)
 
 @app.route('/admin/groups')
 @require_login
@@ -1107,37 +1165,7 @@ def admin_list_groups():
             'users': member_labels
         })
     conn.close()
-    return render_template('admin_groups.html', groups=group_infos)
-
-@app.route('/admin/group_tool_access')
-@require_login
-@require_permission('calendar-tools:task.view')
-def admin_group_tool_access():
-    db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
-    conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
-    groups = conn.execute("SELECT * FROM user_groups").fetchall()
-    tools = conn.execute("SELECT * FROM tools").fetchall()
-    access = conn.execute("SELECT * FROM group_tool_access").fetchall()
-    map_access = {}
-    for a in access:
-        map_access.setdefault(a['group_id'], set()).add(a['tool_id'])
-    conn.close()
-    return render_template('admin_group_tools.html', groups=groups, tools=tools, map_access=map_access)
-
-@app.route('/admin/group_permissions')
-@require_login
-@require_permission('calendar-tools:task.view')  # hoặc 1 quyền hide dành cho admin
-def admin_group_permissions():
-    db_path = app.config.get("DB_PATH", "database/calendar_tools.db")
-    conn = sqlite3.connect(db_path); conn.row_factory = sqlite3.Row
-
-    groups = conn.execute("SELECT * FROM user_groups").fetchall()
-    permissions = conn.execute("SELECT * FROM permissions").fetchall()
-    perm_map = {}
-    for row in conn.execute("SELECT group_id, permission_id FROM group_permissions"):
-        perm_map.setdefault(row['group_id'], set()).add(row['permission_id'])
-    conn.close()
-    return render_template('admin_group_permissions.html', groups=groups, permissions=permissions, perm_map=perm_map)
+    return render_template('admin_groups_adminlte.html', groups=group_infos)
 
 @app.route('/admin/user/<user_id>/rights', methods=['GET', 'POST'])
 @require_login
@@ -1168,7 +1196,7 @@ def admin_edit_user_rights(user_id):
     permissions_by_tool = {}
     for p in permissions:
         permissions_by_tool.setdefault(p["tool_id"], []).append(p)
-    return render_template('admin_user_matrix.html', user_id=user_id, tools=tools, permissions=permissions, has_perms=has_perms, permissions_by_tool=permissions_by_tool)
+    return render_template('admin_user_matrix_adminlte.html', user_id=user_id, tools=tools, permissions=permissions, has_perms=has_perms, permissions_by_tool=permissions_by_tool)
 
 @app.route('/admin/user/<user_id>/tools', methods=['GET', 'POST'])
 @require_login
@@ -1189,7 +1217,7 @@ def admin_edit_user_tools(user_id):
         conn.commit()
         return redirect(url_for('admin_list_users'))
     conn.close()
-    return render_template('admin_user_tools_matrix.html', user_id=user_id, tools=tools, has_tools=has_tools)
+    return render_template('admin_user_tools_matrix_adminlte.html', user_id=user_id, tools=tools, has_tools=has_tools)
 
 @app.route('/admin/group/<group_id>/tools', methods=['GET', 'POST'])
 @require_login
@@ -1209,7 +1237,7 @@ def admin_edit_group_tools(group_id):
         conn.commit()
         return redirect(url_for('admin_list_groups'))
     conn.close()
-    return render_template('admin_group_tools_matrix.html', group_id=group_id, tools=tools, has_tools=has_tools)
+    return render_template('admin_group_tools_matrix_adminlte.html', group_id=group_id, tools=tools, has_tools=has_tools)
 
 @app.route('/admin/group/<group_id>/rights', methods=['GET', 'POST'])
 @require_login
@@ -1237,7 +1265,7 @@ def admin_edit_group_rights(group_id):
     permissions_by_tool = {}
     for p in permissions:
         permissions_by_tool.setdefault(p["tool_id"], []).append(p)
-    return render_template('admin_group_matrix.html', group_id=group_id, tools=tools, permissions=permissions, has_perms=has_perms, permissions_by_tool=permissions_by_tool)
+    return render_template('admin_group_matrix_adminlte.html', group_id=group_id, tools=tools, permissions=permissions, has_perms=has_perms, permissions_by_tool=permissions_by_tool)
 
 @app.route('/admin/group/<group_id>/members', methods=['GET', 'POST'])
 @require_login
@@ -1277,12 +1305,12 @@ def admin_edit_group_members(group_id):
         return redirect(url_for('admin_list_groups'))
 
     conn.close()
-    return render_template('admin_group_members_matrix.html',
+    return render_template('admin_group_members_matrix_adminlte.html',
                            group_id=group_id, users=users, has_users=has_users)
 
 @app.errorhandler(403)
 def forbidden(e):
-    return render_template('403.html'), 403
+    return render_template('403_adminlte.html'), 403
 
 if __name__ == '__main__':
     if config:

@@ -1,0 +1,62 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Thành viên Group - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-users"></i> Thành viên Group: <code>{{ group_id }}</code>
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+    <li class="breadcrumb-item"><a href="{{ url_for('admin_list_groups') }}">Quản trị Group</a></li>
+    <li class="breadcrumb-item active">Thành viên</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-user-friends"></i> Quản lý Thành viên Group
+                </h3>
+            </div>
+            <form method="post">
+                <div class="card-body">
+                    <div class="row">
+                        {% for u in users %}
+                        <div class="col-md-4 col-lg-3 mb-3">
+                            <div class="custom-control custom-checkbox">
+                                <input class="custom-control-input" type="checkbox" 
+                                       name="users" id="u-{{ u.user_id }}" 
+                                       value="{{ u.user_id }}"
+                                       {% if u.user_id in has_users %}checked{% endif %}>
+                                <label class="custom-control-label" for="u-{{ u.user_id }}">
+                                    <strong>
+                                        {{ u.display_name or u.email or u.phone_number or 'Chưa đặt tên' }}
+                                    </strong>
+                                    {% if u.email and u.email != u.display_name %}
+                                    <br><small class="text-muted"><i class="fas fa-envelope"></i> {{ u.email }}</small>
+                                    {% endif %}
+                                    {% if u.phone_number and u.phone_number != u.display_name and u.phone_number != u.email %}
+                                    <br><small class="text-muted"><i class="fas fa-phone"></i> {{ u.phone_number }}</small>
+                                    {% endif %}
+                                </label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Lưu thành viên nhóm
+                    </button>
+                    <a href="{{ url_for('admin_list_groups') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Quay lại
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

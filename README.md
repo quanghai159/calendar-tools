@@ -14,6 +14,12 @@ python3 test_30_second_notification.py
 
 http://localhost:5000/
 
+# Chạy backup
+./pre_migration_backup.sh
+
+cd pre-migration-backup-YYYYMMDD-HHMMSS
+./restore_pre_migration.sh
+
 
 # Hunonic Marketing Tools - Calendar Tools
 

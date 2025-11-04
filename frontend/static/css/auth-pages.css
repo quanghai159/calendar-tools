@@ -1,0 +1,70 @@
+/* Auth Pages Styles (Login/Register) - AdminLTE Version */
+
+.login-box,
+.register-box {
+    width: 360px;
+    margin: 7% auto;
+}
+
+.login-logo,
+.register-logo {
+    font-size: 2.1rem;
+    font-weight: 300;
+    margin-bottom: 0.9rem;
+    text-align: center;
+    color: #01af32;
+}
+
+.login-logo a,
+.register-logo a {
+    color: #01af32;
+}
+
+.login-logo a:hover,
+.register-logo a:hover {
+    text-decoration: none;
+}
+
+.login-card-body,
+.register-card-body {
+    padding: 2rem;
+}
+
+.login-box-msg,
+.register-box-msg {
+    margin: 0;
+    text-align: center;
+    padding: 0 20px 20px;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #666;
+}
+
+.input-group-text {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+}
+
+.form-control:focus {
+    border-color: #01af32;
+    box-shadow: 0 0 0 0.2rem rgba(1, 175, 50, 0.25);
+}
+
+.btn-primary {
+    background-color: #01af32;
+    border-color: #018a28;
+}
+
+.btn-primary:hover {
+    background-color: #018a28;
+    border-color: #018a28;
+}
+
+/* Responsive */
+@media (max-width: 576px) {
+    .login-box,
+    .register-box {
+        width: 90%;
+        margin-top: 20px;
+    }
+}

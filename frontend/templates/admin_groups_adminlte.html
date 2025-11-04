@@ -1,0 +1,83 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Quản trị Nhóm - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-users"></i> Quản trị Nhóm
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+    <li class="breadcrumb-item active">Quản trị Nhóm</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-users"></i> Danh sách Nhóm
+                </h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table id="groups-table" class="table table-striped table-bordered table-hover table-sm" style="width:100%">
+                    <thead>
+                        <tr>
+                            <th>Group ID</th>
+                            <th>Tên nhóm</th>
+                            <th>Thành viên</th>
+                            <th>Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for g in groups %}
+                        <tr>
+                            <td><code>{{ g.group_id }}</code></td>
+                            <td><strong>{{ g.group_name }}</strong></td>
+                            <td>
+                                {% for label in g.users %}
+                                <span class="badge badge-info mr-1 mb-1">{{ label }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>
+                                <div class="btn-group-vertical btn-group-sm" role="group">
+                                    <a href="{{ url_for('admin_edit_group_rights', group_id=g.group_id) }}"
+                                       class="btn btn-primary mb-1">
+                                        <i class="fas fa-key"></i> Sửa quyền
+                                    </a>
+                                    <a href="{{ url_for('admin_edit_group_tools', group_id=g.group_id) }}"
+                                       class="btn btn-success mb-1">
+                                        <i class="fas fa-toolbox"></i> Cấp Tool
+                                    </a>
+                                    <a href="{{ url_for('admin_edit_group_members', group_id=g.group_id) }}"
+                                       class="btn btn-info">
+                                        <i class="fas fa-user-friends"></i> Thành viên
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#groups-table').DataTable({
+        "responsive": true,
+        "lengthChange": true,
+        "autoWidth": false,
+        "pageLength": 25,
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/vi.json"
+        }
+    });
+});
+</script>
+{% endblock %}

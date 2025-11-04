@@ -1,0 +1,23 @@
+PRE-MIGRATION BACKUP INFORMATION
+================================
+Backup Date: 2025-11-01 20:58:07
+Git Tag: pre-adminlte-migration-20251101-205807
+Project: calendar-tools
+Purpose: Backup before AdminLTE migration
+
+RESTORE INSTRUCTIONS:
+=====================
+
+1. Restore from Git Tag:
+   git checkout pre-adminlte-migration-20251101-205807
+   git checkout -b restore-pre-adminlte-migration-20251101-205807
+
+2. Restore Database:
+   cp /Users/AmyNguyen/Desktop/Cursor AI MKT/calendar-tools/pre-migration-backup-20251101-205807/calendar_tools.db.backup database/calendar_tools.db
+
+3. Restore Code from GitHub:
+   git fetch origin
+   git checkout pre-adminlte-migration-20251101-205807
+
+4. Full Restore Script:
+   Run: ./restore_pre_migration.sh

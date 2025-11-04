@@ -1,0 +1,120 @@
+/* Index Page Styles - AdminLTE Version */
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, #01af32 0%, #4ecb71 100%);
+    color: white;
+    padding: 80px 0;
+    margin-bottom: 30px;
+    border-radius: 10px;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    opacity: 0.95;
+}
+
+.hero-description {
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+/* Tool Cards */
+.tool-card {
+    background: white;
+    border-radius: 10px;
+    padding: 30px;
+    height: 100%;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.tool-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.tool-card.coming-soon {
+    opacity: 0.7;
+}
+
+.tool-icon {
+    font-size: 3rem;
+    color: #01af32;
+    margin-bottom: 20px;
+}
+
+.tool-title {
+    color: #333;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.tool-description {
+    color: #666;
+    margin-bottom: 20px;
+    min-height: 60px;
+}
+
+.feature-tag {
+    display: inline-block;
+    background: #f0f0f0;
+    color: #01af32;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin: 5px 5px 5px 0;
+}
+
+/* Stats Grid */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.stat-item {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #01af32;
+}
+
+.stat-label {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.feature-item {
+    padding: 10px 0;
+    font-size: 1.1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+}

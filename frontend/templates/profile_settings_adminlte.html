@@ -1,0 +1,498 @@
+{% extends "base_adminlte.html" %}
+
+{% block title %}Cài đặt cá nhân - Hunonic Marketing Tools{% endblock %}
+
+{% block page_title %}
+    <i class="fas fa-user-cog"></i> Cài đặt cá nhân
+{% endblock %}
+
+{% block breadcrumb %}
+    <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Trang chủ</a></li>
+    <li class="breadcrumb-item active">Cài đặt cá nhân</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header p-0 border-bottom-0">
+                <ul class="nav nav-tabs" id="settings-tabs" role="tablist">
+                    <li class="nav-item">
+                        <a class="nav-link active" id="profile-tab" data-bs-toggle="tab" href="#profile" role="tab">
+                            <i class="fas fa-user"></i> Thông tin cá nhân
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#contact" role="tab">
+                            <i class="fas fa-address-book"></i> Liên lạc
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="general-tab" data-bs-toggle="tab" href="#general" role="tab">
+                            <i class="fas fa-cog"></i> Cài đặt chung
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="notifications-tab" data-bs-toggle="tab" href="#notifications" role="tab">
+                            <i class="fas fa-bell"></i> Thông báo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="calendar-tab" data-bs-toggle="tab" href="#calendar" role="tab">
+                            <i class="fas fa-calendar-alt"></i> Calendar Tools
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="security-tab" data-bs-toggle="tab" href="#security" role="tab">
+                            <i class="fas fa-shield-alt"></i> Bảo mật
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="labels-tab" data-bs-toggle="tab" href="#labels" role="tab">
+                            <i class="fas fa-tags"></i> Nhãn thông báo
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <form method="POST" class="needs-validation" novalidate>
+                <div class="card-body">
+                    <div class="tab-content" id="settings-tab-content">
+                        <!-- Tab 1: Thông tin cá nhân -->
+                        <div class="tab-pane fade show active" id="profile" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="display_name">Tên hiển thị</label>
+                                        <input type="text" class="form-control" id="display_name" name="display_name" 
+                                               value="{{ current.display_name or '' }}" placeholder="Nhập tên hiển thị">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="avatar_url">Avatar URL</label>
+                                        <input type="url" class="form-control" id="avatar_url" name="avatar_url" 
+                                               value="{{ current.avatar_url or '' }}" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="phone_number">Số điện thoại</label>
+                                        <input type="tel" class="form-control" id="phone_number" name="phone_number" 
+                                               value="{{ current.phone_number or '' }}" placeholder="+84...">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="company">Công ty</label>
+                                        <input type="text" class="form-control" id="company" name="company" 
+                                               value="{{ current.company or '' }}" placeholder="Tên công ty">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="department">Phòng ban</label>
+                                        <input type="text" class="form-control" id="department" name="department" 
+                                               value="{{ current.department or '' }}" placeholder="Phòng ban">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="role_title">Chức danh</label>
+                                        <input type="text" class="form-control" id="role_title" name="role_title" 
+                                               value="{{ current.role_title or '' }}" placeholder="Chức danh">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="email_alt">Email phụ</label>
+                                        <input type="email" class="form-control" id="email_alt" name="email_alt" 
+                                               value="{{ current.email_alt or '' }}" placeholder="email@example.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Liên lạc -->
+                        <div class="tab-pane fade" id="contact" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="telegram_user_id">
+                                            <i class="fab fa-telegram-plane text-primary"></i> Telegram User ID
+                                        </label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="telegram_user_id" name="telegram_user_id" 
+                                                   value="{{ current.telegram_user_id or '' }}" placeholder="Nhập Telegram User ID">
+                                            <div class="input-group-append">
+                                                <button type="button" class="btn btn-outline-primary" onclick="getTelegramId()">
+                                                    <i class="fas fa-search"></i> Hướng dẫn
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <small class="form-text text-muted">
+                                            <strong>Cách lấy ID:</strong> Nhắn tin cho 
+                                            <a href="https://t.me/userinfobot" target="_blank">@userinfobot</a>, 
+                                            bot sẽ trả về ID của bạn
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="zalo_phone">Zalo Phone</label>
+                                        <input type="tel" class="form-control" id="zalo_phone" name="zalo_phone" 
+                                               value="{{ current.zalo_phone or '' }}" placeholder="Số điện thoại Zalo">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="zalo_user_id">Zalo User ID</label>
+                                        <input type="text" class="form-control" id="zalo_user_id" name="zalo_user_id" 
+                                               value="{{ current.zalo_user_id or '' }}" placeholder="Zalo User ID">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="facebook_profile_url">Facebook Profile URL</label>
+                                        <input type="url" class="form-control" id="facebook_profile_url" name="facebook_profile_url" 
+                                               value="{{ current.facebook_profile_url or '' }}" placeholder="https://facebook.com/...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 3: Cài đặt chung -->
+                        <div class="tab-pane fade" id="general" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="timezone">Múi giờ</label>
+                                        <input type="text" class="form-control" id="timezone" name="timezone" 
+                                               value="{{ current.timezone or 'Asia/Ho_Chi_Minh' }}" placeholder="Asia/Ho_Chi_Minh">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="language">Ngôn ngữ</label>
+                                        <input type="text" class="form-control" id="language" name="language" 
+                                               value="{{ current.language or 'vi' }}" placeholder="vi">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="date_format">Định dạng ngày</label>
+                                        <input type="text" class="form-control" id="date_format" name="date_format" 
+                                               value="{{ current.date_format or 'DD/MM/YYYY' }}" placeholder="DD/MM/YYYY">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="time_format">Định dạng giờ</label>
+                                        <input type="text" class="form-control" id="time_format" name="time_format" 
+                                               value="{{ current.time_format or 'HH:mm' }}" placeholder="HH:mm">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="week_start">Ngày bắt đầu tuần</label>
+                                        <input type="text" class="form-control" id="week_start" name="week_start" 
+                                               value="{{ current.week_start or 'monday' }}" placeholder="monday">
+                                    </div>
+                                </div>
+                                <div class="col-md-9">
+                                    <div class="form-group">
+                                        <label for="notification_channel_priority">Thứ tự kênh thông báo (JSON)</label>
+                                        <input type="text" class="form-control" id="notification_channel_priority" 
+                                               name="notification_channel_priority" 
+                                               value='{{ current.notification_channel_priority or '["telegram","zalo","email"]' }}' 
+                                               placeholder='["telegram","zalo","email"]'>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 4: Thông báo -->
+                        <div class="tab-pane fade" id="notifications" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notify_via_telegram" 
+                                                   name="notify_via_telegram" {% if current.notify_via_telegram == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="notify_via_telegram">
+                                                <i class="fab fa-telegram-plane text-primary"></i> Thông báo qua Telegram
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notify_via_zalo" 
+                                                   name="notify_via_zalo" {% if current.notify_via_zalo == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="notify_via_zalo">
+                                                <i class="fas fa-comment-dots text-info"></i> Thông báo qua Zalo
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="notify_via_email" 
+                                                   name="notify_via_email" {% if current.notify_via_email == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="notify_via_email">
+                                                <i class="fas fa-envelope text-danger"></i> Thông báo qua Email
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="quiet_hours_range">Khoảng yên lặng</label>
+                                        <input type="text" class="form-control" id="quiet_hours_range" name="quiet_hours_range" 
+                                               value="{{ current.quiet_hours_range or '' }}" placeholder="22:00-08:00">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="quiet_hours_enabled" 
+                                                   name="quiet_hours_enabled" {% if current.quiet_hours_enabled == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="quiet_hours_enabled">
+                                                Bật giờ yên lặng
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="daily_digest_enabled" 
+                                                   name="daily_digest_enabled" {% if current.daily_digest_enabled == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="daily_digest_enabled">
+                                                Bật báo cáo hàng ngày
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label for="daily_digest_time">Giờ gửi báo cáo</label>
+                                        <input type="time" class="form-control" id="daily_digest_time" name="daily_digest_time" 
+                                               value="{{ current.daily_digest_time or '08:00' }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 5: Calendar Tools -->
+                        <div class="tab-pane fade" id="calendar" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="default_event_duration">Thời lượng mặc định (phút)</label>
+                                        <input type="number" class="form-control" id="default_event_duration" name="default_event_duration" 
+                                               value="{{ current.default_event_duration or '60' }}" min="1">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="default_category">Danh mục mặc định</label>
+                                        <input type="text" class="form-control" id="default_category" name="default_category" 
+                                               value="{{ current.default_category or 'general' }}" placeholder="general">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label for="notification_lead_time">Nhắc trước (phút)</label>
+                                        <input type="number" class="form-control" id="notification_lead_time" name="notification_lead_time" 
+                                               value="{{ current.notification_lead_time or '15' }}" min="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch mt-4">
+                                            <input type="checkbox" class="custom-control-input" id="auto_add_telegram_reminder" 
+                                                   name="auto_add_telegram_reminder" {% if current.auto_add_telegram_reminder == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="auto_add_telegram_reminder">
+                                                Tự tạo Telegram reminder
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 6: Bảo mật -->
+                        <div class="tab-pane fade" id="security" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="crm_api_key">CRM API Key</label>
+                                        <input type="password" class="form-control" id="crm_api_key" name="crm_api_key" 
+                                               value="{{ current.crm_api_key or '' }}" placeholder="API Key">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="crm_endpoint">CRM Endpoint</label>
+                                        <input type="url" class="form-control" id="crm_endpoint" name="crm_endpoint" 
+                                               value="{{ current.crm_endpoint or '' }}" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="ga_property_id">GA Property ID</label>
+                                        <input type="text" class="form-control" id="ga_property_id" name="ga_property_id" 
+                                               value="{{ current.ga_property_id or '' }}" placeholder="G-XXXXXXXXXX">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="webhook_url">Webhook URL</label>
+                                        <input type="url" class="form-control" id="webhook_url" name="webhook_url" 
+                                               value="{{ current.webhook_url or '' }}" placeholder="https://...">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <div class="custom-control custom-switch">
+                                            <input type="checkbox" class="custom-control-input" id="2fa_enabled" 
+                                                   name="2fa_enabled" {% if current['2fa_enabled'] == '1' %}checked{% endif %}>
+                                            <label class="custom-control-label" for="2fa_enabled">
+                                                <i class="fas fa-shield-alt"></i> Bật xác thực 2 yếu tố (2FA)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="backup_email">Email khôi phục</label>
+                                        <input type="email" class="form-control" id="backup_email" name="backup_email" 
+                                               value="{{ current.backup_email or '' }}" placeholder="backup@example.com">
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="allowed_ips">Danh sách IP cho phép (JSON)</label>
+                                        <input type="text" class="form-control" id="allowed_ips" name="allowed_ips" 
+                                               value='{{ current.allowed_ips or '[]' }}' placeholder='["192.168.1.1", "10.0.0.1"]'>
+                                        <small class="form-text text-muted">Để trống nếu cho phép tất cả IP</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab 7: Nhãn thông báo -->
+                        <div class="tab-pane fade" id="labels" role="tabpanel">
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> Tùy chỉnh tên hiển thị cho các cột thông báo trong Calendar Tools
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_1">Thông báo 1</label>
+                                        <input type="text" class="form-control" id="notif_label_1" name="notif_label_1" 
+                                               value="{{ current.get('notif_label_1', 'Thông báo 1') }}" placeholder="Ví dụ: Báo cáo tuần">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_2">Thông báo 2</label>
+                                        <input type="text" class="form-control" id="notif_label_2" name="notif_label_2" 
+                                               value="{{ current.get('notif_label_2', 'Thông báo 2') }}" placeholder="Ví dụ: Báo cáo tháng">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_3">Thông báo 3</label>
+                                        <input type="text" class="form-control" id="notif_label_3" name="notif_label_3" 
+                                               value="{{ current.get('notif_label_3', 'Thông báo 3') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_4">Thông báo 4</label>
+                                        <input type="text" class="form-control" id="notif_label_4" name="notif_label_4" 
+                                               value="{{ current.get('notif_label_4', 'Thông báo 4') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_5">Thông báo 5</label>
+                                        <input type="text" class="form-control" id="notif_label_5" name="notif_label_5" 
+                                               value="{{ current.get('notif_label_5', 'Thông báo 5') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_6">Thông báo 6</label>
+                                        <input type="text" class="form-control" id="notif_label_6" name="notif_label_6" 
+                                               value="{{ current.get('notif_label_6', 'Thông báo 6') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_7">Thông báo 7</label>
+                                        <input type="text" class="form-control" id="notif_label_7" name="notif_label_7" 
+                                               value="{{ current.get('notif_label_7', 'Thông báo 7') }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="notif_label_8">Thông báo 8</label>
+                                        <input type="text" class="form-control" id="notif_label_8" name="notif_label_8" 
+                                               value="{{ current.get('notif_label_8', 'Thông báo 8') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Lưu cài đặt
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="fas fa-times"></i> Hủy
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize Bootstrap 5 tabs
+    document.addEventListener('DOMContentLoaded', function() {
+        // Lấy hash từ URL (ví dụ: #contact, #general)
+        const hash = window.location.hash;
+        
+        // Nếu có hash, mở tab tương ứng
+        if (hash) {
+            const tabId = hash.substring(1); // Bỏ dấu #
+            const tabElement = document.querySelector(`#${tabId}-tab`);
+            if (tabElement) {
+                const tab = new bootstrap.Tab(tabElement);
+                tab.show();
+            }
+        }
+        
+        // Cập nhật hash khi click vào tab
+        const tabLinks = document.querySelectorAll('#settings-tabs .nav-link[data-bs-toggle="tab"]');
+        tabLinks.forEach(function(link) {
+            link.addEventListener('shown.bs.tab', function(e) {
+                const targetId = e.target.getAttribute('href').substring(1); // Bỏ dấu #
+                window.location.hash = targetId;
+            });
+        });
+    });
+    
+    function getTelegramId() {
+        window.open('https://t.me/userinfobot', '_blank');
+        alert('Hướng dẫn:\n\n1. Tab mới sẽ mở @userinfobot\n2. Nhắn tin bất kỳ cho bot\n3. Bot sẽ trả về ID của bạn\n4. Copy ID và paste vào ô "Telegram User ID"');
+    }
+</script>
+{% endblock %}
